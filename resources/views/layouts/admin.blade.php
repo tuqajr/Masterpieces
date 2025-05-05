@@ -103,11 +103,11 @@
         }
         
         .sidebar-logo img {
-            height: 45px;
+            height: 40px;
         }
         
         .logo-text {
-            font-family: 'Reem Kufi Fun', sans-serif;
+            font-family: 'Reem Kufi Fun', sans-serif !important;
             font-size: 26px;
             color: white !important;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
@@ -267,7 +267,6 @@
                             <ul class="submenu">
                                 <li><a class="nav-link" href="{{ route('admin.users.index') }}">All Users</a></li>
                                 <li><a class="nav-link" href="{{ route('admin.users.create') }}">Add New User</a></li>
-                                <li><a class="nav-link" href="">Roles & Permissions</a></li>
                             </ul>
                         </li>
                         

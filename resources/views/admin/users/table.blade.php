@@ -57,7 +57,7 @@
 <!-- Pagination Links -->
 <div class="d-flex justify-content-center">
   <div id="paginationLinks">
-    {{ $users->links('vendor.pagination.bootstrap-4') }}
+    
   </div>
 </div>
 

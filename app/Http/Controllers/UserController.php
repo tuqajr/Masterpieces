@@ -14,8 +14,15 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function index()
+{
+    dd("test index");
+    $users = User::paginate(10); // 10 users per page
+    return view('admin.users.table', compact('users'));
+}
+public function store(Request $request)
+{
+
         // Validate the request data
         $validated = $request->validate([
             'username' => 'required|string|max:255',
@@ -29,6 +36,6 @@ class UserController extends Controller
         // Create the user
         $user = User::create($validated);
 
-        return response()->json(['message' => 'User created successfully', 'user' => $user], 201);
+        // return response()->json(['message' => 'User created successfully', 'user' => $user], 201);
     }
 }

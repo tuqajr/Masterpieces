@@ -1,18 +1,22 @@
 <?php
 
+use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use Illuminate\Http\Request;
-use App\Models\Product;
 
 // Static Pages
 Route::view('/', 'welcome')->name('home');
@@ -47,7 +51,23 @@ Route::middleware('auth')->group(function () {
 
 
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
-Route::get('/shop/{product}', [ShopController::class, 'show'])->name('product.show');
+
+
+// Admin routes (typically wrapped in middleware for authentication)
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Products
+    Route::resource('products', AdminProductController::class);
+    
+    // Orders
+    Route::resource('orders', AdminOrderController::class);
+    
+    // Users
+    Route::resource('users', AdminUserController::class);
+});
+
 
 
 // Cart routes

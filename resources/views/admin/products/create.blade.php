@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="admin-header">
-        <h1>Add New Product</h1>
+        <h1> + Add New Product</h1>
         <a href="{{ route('admin.products.index') }}" class="btn-back">Back to Products</a>
     </div>
     

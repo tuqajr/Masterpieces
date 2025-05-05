@@ -14,6 +14,7 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));  
     }
 
+    
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
