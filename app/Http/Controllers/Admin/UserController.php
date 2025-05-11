@@ -13,19 +13,8 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::query();
-    
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
-        }
-    
-        if ($request->filled('role')) {
-            $query->where('role', $request->role);
-        }
-    
-        $users = $query->paginate(10);
-    
+        // dd('hello index');
+        $users = User::paginate(10); // Fetch users with pagination
         return view('admin.users.index', compact('users'));
     }
 
@@ -60,7 +49,7 @@ class UserController extends Controller
             'address' => $request->address,
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+        return redirect()->route('admin.all_user_dashboard')->with('success', 'User created successfully.');
     }
 
     /**
@@ -97,7 +86,7 @@ class UserController extends Controller
             'address' => $request->address,
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+        return redirect()->route('admin.all_user_dashboard')->with('success', 'User updated successfully.');
     }
 
     /**
@@ -108,6 +97,6 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('admin.all_user_dashboard')->with('success', 'User deleted successfully.');
     }
 }

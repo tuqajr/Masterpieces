@@ -43,9 +43,7 @@ class AdminUserController extends Controller
         
         $user = User::create($validated);
         
-        return redirect()
-            ->route('admin.users.index')
-            ->with('success', 'User created successfully.');
+        return redirect()->route('admin.all_user_dashboard')->with('success', 'User created successfully.');
     }
 
     /**
@@ -89,7 +87,7 @@ class AdminUserController extends Controller
         $user->update($validated);
         
         return redirect()
-            ->route('admin.users.index')
+            ->route('admin.all_user_dashboard')
             ->with('success', 'User updated successfully.');
     }
 
@@ -102,7 +100,7 @@ class AdminUserController extends Controller
         $user->delete();
         
         return redirect()
-            ->route('admin.users.index')
+            ->route('admin.all_user_dashboard')
             ->with('success', 'User deleted successfully.');
     }
 }

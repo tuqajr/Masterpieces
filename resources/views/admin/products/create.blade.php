@@ -43,7 +43,7 @@
             
             <div class="form-group">
                 <label for="image">Product Image</label>
-                <input type="file" id="image" name="image" accept="image/*" required>
+                <input type="file" id="image" name="image" accept="image/*" >
                 <div class="image-preview-container">
                     <div id="image-preview" class="image-preview"></div>
                 </div>
