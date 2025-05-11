@@ -72,7 +72,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
 
     // Users
-    Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    // Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('/all_users', [UserController::class, 'index'])->name('all_user_dashboard');
+
+    Route::get('/creat_users', [UserController::class, 'create'])->name('users.create');
+
+    Route::get('/store_users', [UserController::class, 'store'])->name('users.store');
 });
 
 require __DIR__.'/auth.php';

@@ -13,6 +13,8 @@ class UserController extends Controller
      */
     public function index()
     {
+        dd('hello index');
+
         $users = User::paginate(10); // Fetch users with pagination
         return view('admin.users.index', compact('users'));
     }
@@ -22,6 +24,8 @@ class UserController extends Controller
      */
     public function create()
     {
+        // dd('hello index');
+
         return view('admin.users.create');
     }
 
@@ -44,7 +48,7 @@ class UserController extends Controller
             'role' => $request->role,
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+        return redirect()->route('admin.all_user_dashboard')->with('success', 'User created successfully.');
     }
 
     /**
@@ -75,7 +79,7 @@ class UserController extends Controller
             'role' => $request->role,
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+        return redirect()->route('admin.all_user_dashboard')->with('success', 'User updated successfully.');
     }
 
     /**
@@ -86,6 +90,6 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('admin.all_user_dashboard')->with('success', 'User deleted successfully.');
     }
 }

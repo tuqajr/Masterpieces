@@ -265,7 +265,7 @@
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                             <ul class="submenu">
-                                <li><a class="nav-link" href="{{ route('admin.users.index') }}">All Users</a></li>
+                                <li><a class="nav-link" href="{{ route('admin.all_user_dashboard') }}">All Users</a></li>
                                 <li><a class="nav-link" href="{{ route('admin.users.create') }}">Add New User</a></li>
                             </ul>
                         </li>

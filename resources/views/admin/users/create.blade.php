@@ -1,10 +1,11 @@
 @extends('layouts.admin')
 
 @section('content')
+
 <div class="container">
     <div class="admin-header">
         <h1><i class="fas fa-plus-circle"></i> Add New User</h1>
-        <a href="{{ route('admin.users.index') }}" class="btn-back">
+        <a href="{{ route('admin.all_user_dashboard') }}" class="btn-back">
             <i class="fas fa-arrow-left"></i> Back to Users
         </a>
     </div>
@@ -90,7 +91,7 @@
                     <button type="submit" class="btn-save">
                         <i class="fas fa-save"></i> Create User
                     </button>
-                    <a href="{{ route('admin.users.index') }}" class="btn-cancel">
+                    <a href="{{ route('admin.all_user_dashboard') }}" class="btn-cancel">
                         Cancel
                     </a>
                 </div>
