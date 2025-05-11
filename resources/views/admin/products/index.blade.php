@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid">
@@ -37,7 +37,7 @@
                                 </td>
                                 <td>{{ $product->name }}</td>
                                 <td>${{ number_format($product->price, 2) }}</td>
-                                <td>{{ $product->created_at->format('M d, Y') }}</td>
+                                <td>{{ $product->created_at ? $product->created_at->format('M d, Y') : 'N/A' }}</td>
                                 <td>
                                     <div class="btn-group">
                                         <a href="{{ route('admin.products.show', $product->id) }}" class="btn btn-sm btn-info">
