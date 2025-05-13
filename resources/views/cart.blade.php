@@ -135,12 +135,7 @@
         </div>
         <div class="footer-section">
             <h3>Customer Service</h3>
-            <ul>
-                <li><a href="{{ url('/faq') }}">FAQ</a></li>
-                <li><a href="{{ url('/shipping') }}">Shipping Information</a></li>
-                <li><a href="{{ url('/returns') }}">Returns & Exchanges</a></li>
-                <li><a href="{{ url('/terms') }}">Terms & Conditions</a></li>
-            </ul>
+           
         </div>
         <div class="footer-section">
             <h3>Connect With Us</h3>
@@ -154,11 +149,7 @@
     </div>
     <div class="footer-bottom">
         <p>&copy; {{ date('Y') }} Tatreez. All Rights Reserved.</p>
-        <div class="payment-methods">
-            <img src="{{ asset('images/payment/visa.png') }}" alt="Visa">
-            <img src="{{ asset('images/payment/mastercard.png') }}" alt="Mastercard">
-            <img src="{{ asset('images/payment/paypal.png') }}" alt="PayPal">
-        </div>
+       
     </div>
 </footer>
 

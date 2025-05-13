@@ -14,6 +14,10 @@ return new class extends Migration
     // Schema::table('products', function (Blueprint $table) {
     //     $table->string('image')->nullable()->after('price');
     // });
+
+     Schema::table('products', function (Blueprint $table) {
+        $table->string('image')->nullable();
+    });
 }
 
 public function down()

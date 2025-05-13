@@ -25,11 +25,11 @@
         <label for="name">Product Name</label>
         <input type="text" name="name" class="form-control" required>
     </div>
-            
+            <!-- 
             <div class="form-group">
                 <label for="name">Product Name</label>
                 <input type="text" id="name" name="name" value="{{ old('name') }}" required>
-            </div>
+            </div> -->
             
             <div class="form-group">
                 <label for="description">Description</label>
@@ -42,11 +42,22 @@
             </div>
             
             <div class="form-group">
-                <label for="image">Product Image</label>
-                <input type="file" id="image" name="image" accept="image/*" >
-                <div class="image-preview-container">
-                    <div id="image-preview" class="image-preview"></div>
-                </div>
+    <label for="image">Product Image</label>
+    <div class="custom-file-upload">
+        <input type="file" id="image" name="image" accept="image/*" class="file-input" onchange="previewImage(this);">
+        <label for="image" class="file-label">
+            <span class="btn-upload">Choose File</span>
+            <span class="file-name">No file chosen</span>
+        </label>
+    </div>
+    
+    <div class="image-preview-container">
+        <div id="image-preview" class="image-preview">
+            <span class="preview-text">Image Preview</span>
+        </div>
+    </div>
+</div>
+
             </div>
             
             <div class="form-buttons">
@@ -134,8 +145,54 @@
         font-size: 16px;
     }
     
+     .custom-file-upload {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .file-input {
+        position: absolute;
+        left: -9999px;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .file-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        width: 100%;
+        margin: 0;
+    }
+    
+    .btn-upload {
+        background-color: rgb(145, 51, 51);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: normal;
+        margin-right: 10px;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-upload:hover {
+        background-color: #d9534f;
+    }
+    
+    .file-name {
+        color: #555;
+        font-weight: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
     .image-preview-container {
-        margin-top: 10px;
+        margin-top: 15px;
     }
     
     .image-preview {
@@ -150,10 +207,16 @@
         font-size: 14px;
         background-size: cover;
         background-position: center;
+        position: relative;
     }
     
-    .image-preview:empty:before {
-        content: "Image Preview";
+    .preview-text {
+        position: absolute;
+        z-index: 1;
+    }
+    
+    .image-preview.has-image .preview-text {
+        display: none;
     }
     
     .form-buttons {
@@ -195,16 +258,25 @@
 </style>
 
 <script>
-    // Preview image before upload
-    document.getElementById('image').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
+    function previewImage(input) {
+        const preview = document.getElementById('image-preview');
+        const fileNameDisplay = input.nextElementSibling.querySelector('.file-name');
+        
+        // Update file name display
+        if (input.files && input.files[0]) {
+            fileNameDisplay.textContent = input.files[0].name;
+            
             const reader = new FileReader();
             reader.onload = function(e) {
-                document.getElementById('image-preview').style.backgroundImage = `url(${e.target.result})`;
+                preview.style.backgroundImage = `url(${e.target.result})`;
+                preview.classList.add('has-image');
             }
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            fileNameDisplay.textContent = 'No file chosen';
+            preview.style.backgroundImage = '';
+            preview.classList.remove('has-image');
         }
-    });
+    }
 </script>
 @endsection

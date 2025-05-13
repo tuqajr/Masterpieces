@@ -14,19 +14,18 @@ class CartController extends Controller
      */
     public function show()
     {
-        $cartItems = CartItem::where('user_id', Auth::id())
-            ->with('product')
-            ->get();
-            
-        $total = $cartItems->sum(function($item) {
+        $user = Auth::user();
+
+        $cartItems = CartItem::where('user_id', $user->id)
+            ->with('product') 
+            ->get()
+            ->filter(fn($item) => $item->product !== null); 
+
+        $total = $cartItems->sum(function ($item) {
             return $item->product->price * $item->quantity;
         });
-        
+
         return view('cart', compact('cartItems', 'total'));
-    {
-     return view('cart.show');
-    }
-        
     }
 
     /**
@@ -34,33 +33,23 @@ class CartController extends Controller
      */
     public function add(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'sometimes|integer|min:1',
+        // Validate product existence
+        $product = Product::findOrFail($request->product_id);
+
+        $cartItem = CartItem::firstOrNew([
+            'user_id' => Auth::id(),
+            'product_id' => $product->id,
         ]);
 
-        $product = Product::findOrFail($request->product_id);
-        $quantity = $request->quantity ?? 1;
-
-        // Check if the product is already in the cart
-        $existingItem = CartItem::where('user_id', Auth::id())
-            ->where('product_id', $product->id)
-            ->first();
-
-        if ($existingItem) {
-            // Update the quantity if it's already in the cart
-            $existingItem->quantity += $quantity;
-            $existingItem->save();
+        if ($request->has('replace') && $request->replace) {
+            $cartItem->quantity = $request->quantity;
         } else {
-            // Add a new cart item
-            CartItem::create([
-                'user_id' => Auth::id(),
-                'product_id' => $product->id,
-                'quantity' => $quantity,
-            ]);
+            $cartItem->quantity += $request->input('quantity', 1);
         }
 
-        return back()->with('success', $product->name . ' added to cart!');
+        $cartItem->save();
+
+        return redirect()->route('cart')->with('success', 'Item added to cart!');
     }
 
     /**
@@ -107,18 +96,17 @@ class CartController extends Controller
     public function checkout()
     {
         $cartItems = CartItem::where('user_id', Auth::id())->get();
-        
+
         if ($cartItems->isEmpty()) {
             return back()->with('error', 'Your cart is empty!');
         }
 
-        // Here you would typically:
-        // 1. Create an order
-        // 2. Create order items
-        // 3. Clear the cart
-        // 4. Process payment
-        
-        // For now, let's just clear the cart
+        // TODO:
+        // 1. Create Order
+        // 2. Add OrderItems
+        // 3. Handle payment
+        // 4. Clear cart
+
         CartItem::where('user_id', Auth::id())->delete();
 
         return redirect()->route('home')->with('success', 'Thank you for your order!');

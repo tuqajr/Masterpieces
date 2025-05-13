@@ -30,32 +30,43 @@ class ProductController extends Controller
     /**
      * Store a newly created product in storage.
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'description' => 'required',
-            'price' => 'required|numeric|min:0',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'category_id' => 'nullable|exists:categories,id',
-        ]);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'price' => 'required|numeric|min:0',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
-            $validated['image'] = $imagePath;
-        }
+    $productData = [
+        'name' => $validated['name'],
+        'description' => $validated['description'],
+        'price' => $validated['price'],
+        'image' => null, // Default to null if no image
+    ];
 
-        Product::create($validated);
-
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product created successfully.');
+    // Handle image upload
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('products', 'public');
+        $productData['image'] = $imagePath; // Store just the path, not '/storage/'
     }
 
-    /**
-     * Display the specified product.
-     */
+    // Create product
+    $product = Product::create($productData);
+
+    return redirect()->route('admin.products.index')
+        ->with('success', 'Product created successfully!');
+}
+
+
+protected $fillable = [
+    'name',
+    'description',
+    'price',
+    'image',
+];
+
     public function show(Product $product)
     {
         return view('admin.products.show', compact('product'));
