@@ -124,13 +124,15 @@
 <div class="product-grid">
     @foreach ($products as $product)
     <div class="product-card">
-        <div class="product-image">
+       <div class="product-image">
     @if (Str::startsWith($product->image, 'http'))
         <img src="{{ $product->image }}" alt="{{ $product->name }}" />
-    @elseif (file_exists(public_path($product->image)))
-        <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" />
     @else
-        <img src="{{ asset('images/no-image.jpg') }}" alt="No image available" />
+        @php
+            // Always use products directory for the image path
+            $imagePath = 'storage/products/' . basename($product->image);
+        @endphp
+        <img src="{{ asset($imagePath) }}" alt="{{ $product->name }}" />
     @endif
 </div>
         <div class="product-info">

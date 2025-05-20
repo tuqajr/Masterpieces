@@ -79,10 +79,17 @@
         <div class="cart-items">
             @foreach($cartItems as $item)
                 <div class="cart-item">
-                    <div class="cart-item-image">
-                        <img src="{{ $item->product->image ? asset('storage/images/' . $item->product->image) : asset('images/placeholder.png') }}"
-                             alt="{{ $item->product->name }}">
-                    </div>
+                   <div class="cart-item-image">
+    @if (Str::startsWith($item->product->image, 'http'))
+        <img src="{{ $item->product->image }}" alt="{{ $item->product->name }}">
+    @else
+        @php
+            // Always use products directory for the image path
+            $imagePath = $item->product->image ? 'storage/products/' . basename($item->product->image) : 'images/placeholder.png';
+        @endphp
+        <img src="{{ asset($imagePath) }}" alt="{{ $item->product->name }}">
+    @endif
+</div>
                     <div class="cart-item-details">
                         <h4>{{ $item->product->name }}</h4>
                         <p>{{ Str::limit($item->product->description, 100) }}</p>
@@ -131,38 +138,42 @@
 </div>
 
 <!-- Footer Section -->
-<footer class="footer">
+<footer>
     <div class="footer-container">
         <div class="footer-section">
-            <h3>Quick Links</h3>
+            <h4>Tatreez Traditions</h4>
+            <p>Preserving Palestinian embroidery heritage through authentic products and educational resources.</p>
+            <div class="footer-social">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-pinterest-p"></i></a>
+            </div>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Quick Links</h4>
             <ul>
                 <li><a href="{{ url('/') }}">Home</a></li>
                 <li><a href="{{ url('/shop') }}">Shop</a></li>
-                <li><a href="{{ url('/about') }}">About Us</a></li>
+                <li><a href="{{ url('/learn') }}">Learn</a></li>
+                <li><a href="{{ url('/about') }}">About</a></li>
                 <li><a href="{{ url('/contact') }}">Contact</a></li>
-                <li><a href="{{ url('/privacy') }}">Privacy Policy</a></li>
             </ul>
         </div>
+        
         <div class="footer-section">
-            <h3>Customer Service</h3>
+            <h4>Contact</h4>
             <ul>
-                <li><a href="#">FAQ</a></li>
-                <li><a href="#">Shipping Policy</a></li>
-                <li><a href="#">Return Policy</a></li>
+                <li><a href="mailto:info@tatreez.com">info@tatreez.com</a></li>
+                <li><a href="tel:+123456789">+123 456 789</a></li>
+                <li>123 Embroidery Street<br>Artisan District<br>Amman, Jordan</li>
             </ul>
-        </div>
-        <div class="footer-section">
-            <h3>Contact Us</h3>
-            <div class="social-icons">
-                <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="social-icon"><i class="fab fa-pinterest"></i></a>
-            </div>
         </div>
     </div>
+    
     <div class="footer-bottom">
-        <p>&copy; {{ date('Y') }} Gharzah. All rights reserved.</p>
+        <p>&copy; 2025 Tatreez Traditions. All rights reserved.</p>
     </div>
 </footer>
 
@@ -344,6 +355,110 @@
         font-size: 16px;
         font-weight: bold;
         letter-spacing: 0.5px;
+    }
+     /* Footer Styles */
+    footer {
+        background-color: #913333;
+        color: white;
+        padding: 20px 0;
+        margin-top: 50px;
+    }
+    
+    .footer-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .footer-section {
+        flex: 1;
+        min-width: 250px;
+        margin-bottom: 20px;
+    }
+
+    .footer-section h4 {
+        color: #d4af37;
+        font-family: 'Reem Kufi', sans-serif;
+        margin-bottom: 15px;
+        font-size: 20px;
+        font-weight: bolder;
+    }
+
+    .footer-section p {
+        color: white;
+        margin-bottom: 12px;
+        font-size: 16px;
+    }
+
+    .footer-section ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .footer-section ul li {
+        margin-bottom: 10px;
+    }
+
+    .footer-section ul li a {
+        color: #fff;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .footer-section ul li a:hover {
+        color: #d4af37;
+    }
+
+    .footer-social {
+        display: flex;
+        gap: 15px;
+    }
+
+    .footer-social a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: #9b3737;
+        color: white;
+        border-radius: 50%;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .footer-social a:hover {
+        background-color: #7c2828;
+        transform: translateY(-3px);
+    }
+
+    .footer-bottom {
+        text-align: center;
+        padding: 20px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 20px;
+    }
+
+    .footer-bottom p {
+        color: #fff;
+        margin: 0;
+    }
+     @media (max-width: 768px) {
+        
+        .footer-container {
+            flex-direction: column;
+        }
+        
+        .footer-section {
+            margin-bottom: 30px;
+        }
+        
+        .filter-group {
+            flex-basis: 100%;
+            margin-right: 0;
+        }
     }
 </style>
 

@@ -28,9 +28,16 @@
                 @forelse($products as $product)
                     <tr>
                         <td>{{ $product->id }}</td>
-                        <td>
-                            <img class="product-image" src="{{ asset($product->image) }}" alt="{{ $product->name }}">
-                        </td>
+                       <td>
+                    @if (Str::startsWith($product->image, 'http'))
+                        <img class="product-image" src="{{ $product->image }}" alt="{{ $product->name }}">
+                    @else
+                        @php
+                            $imagePath = $product->image ? 'storage/products/' . basename($product->image) : 'images/placeholder.png';
+                        @endphp
+                        <img class="product-image" src="{{ asset($imagePath) }}" alt="{{ $product->name }}">
+                    @endif
+                </td>
                         <td>{{ $product->name }}</td>
                         <td>${{ number_format($product->price, 2) }}</td>
                         <td class="actions">
@@ -50,10 +57,34 @@
             </tbody>
         </table>
         
-        <!-- Pagination Links -->
-        <div class="pagination-container">
-            {{ $products->links() }}
-        </div>
+      <div class="pagination-container">
+    @if ($products->hasPages())
+        <ul class="pagination">
+            {{-- Previous Page Link --}}
+            @if ($products->onFirstPage())
+                <li class="disabled"><span>&laquo;</span></li>
+            @else
+                <li><a href="{{ $products->previousPageUrl() }}" rel="prev">&laquo;</a></li>
+            @endif
+
+            {{-- Pagination Elements --}}
+            @foreach ($products->getUrlRange(1, $products->lastPage()) as $page => $url)
+                @if ($page == $products->currentPage())
+                    <li class="active"><span>{{ $page }}</span></li>
+                @else
+                    <li><a href="{{ $url }}">{{ $page }}</a></li>
+                @endif
+            @endforeach
+
+            {{-- Next Page Link --}}
+            @if ($products->hasMorePages())
+                <li><a href="{{ $products->nextPageUrl() }}" rel="next">&raquo;</a></li>
+            @else
+                <li class="disabled"><span>&raquo;</span></li>
+            @endif
+        </ul>
+    @endif
+</div>
     </div>
 </div>
 
