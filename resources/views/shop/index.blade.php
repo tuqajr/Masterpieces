@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 
 <link rel="stylesheet" href="css/navbar-footer.css">
 
@@ -13,15 +15,17 @@
     
 <header>
 <div class="navbar">
-        <div class="icons">
-            @if(Auth::check())
-            <a href="{{ route('cart.show') }}" class="cart-icon">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="cart-count">
+         <div class="icons">
+        <a href="{{ route('cart.show') }}" class="cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-count">
+                @auth
                     {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
-                </span>
-            </a>
-            @endif
+                @else
+                    0
+                @endauth
+            </span>
+        </a>
             
             @if(Auth::check())
                 <div class="login-register-dropdown">
@@ -75,16 +79,16 @@
 <div class="container">
     <h1>Our Products</h1>
     <div class="product-filters">
-    <form method="GET" action="{{ url('/shop') }}">
+    <form method="GET" action="{{ url('/shop') }}" id="filter-form">
         <div class="filter-group">
             <label for="category">Category:</label>
-            <select name="category" id="category">
-                <option value="">All</option>
-                <option value="mug" {{ request('category') == 'mug' ? 'selected' : '' }}>Mugs</option>
-                <option value="bag" {{ request('category') == 'bag' ? 'selected' : '' }}>Bags</option>
-                <option value="hoodie" {{ request('category') == 'hoodie' ? 'selected' : '' }}>Hoodies</option>
-                <option value="art" {{ request('category') == 'art' ? 'selected' : '' }}>Wall Art</option>
-                <option value="learn" {{ request('category') == 'learn' ? 'selected' : '' }}>Workshop</option>
+            <select name="category" id="category" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                @foreach($categories as $categoryValue => $categoryName)
+                    <option value="{{ $categoryValue }}" {{ request('category') == $categoryValue ? 'selected' : '' }}>
+                        {{ $categoryName }}
+                    </option>
+                @endforeach
             </select>
         </div>
 
@@ -106,7 +110,9 @@
         @if(Auth::check())
         <div class="filter-group favorites-filter">
             <label for="favorites-only">
-                <input type="checkbox" name="favorites_only" id="favorites-only" value="1" {{ request('favorites_only') ? 'checked' : '' }}>
+                <input type="checkbox" name="favorites_only" id="favorites-only" value="1" 
+                       {{ request('favorites_only') ? 'checked' : '' }}
+                       onchange="this.form.submit()">
                 Show my favorites only
             </label>
         </div>
@@ -115,32 +121,56 @@
 </div>
 
 
-    <div class="product-grid">
-        @foreach ($products as $product)
-        <div class="product-card">
-            <div class="product-image">
-                <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" />
-            </div>
-            <div class="product-info">
-                <h3>{{ $product->name }}</h3>
-                <p class="product-description">{{ $product->description }}</p>
-                <p class="product-price">${{ number_format($product->price, 2) }}</p>
-                
-                <div class="product-actions">
-                    <form action="{{ route('cart.add', $product->id) }}" method="POST">
+<div class="product-grid">
+    @foreach ($products as $product)
+    <div class="product-card">
+        <div class="product-image">
+    @if (Str::startsWith($product->image, 'http'))
+        <img src="{{ $product->image }}" alt="{{ $product->name }}" />
+    @elseif (file_exists(public_path($product->image)))
+        <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" />
+    @else
+        <img src="{{ asset('images/no-image.jpg') }}" alt="No image available" />
+    @endif
+</div>
+        <div class="product-info">
+            <h3>{{ $product->name }}</h3>
+            <p class="product-description">{{ Str::limit($product->description, 100) }}</p>
+            <p class="product-price">${{ number_format($product->price, 2) }}</p>
+            <div class="product-actions">
+                @if(Auth::check())
+                    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="cart-add-form">
                         @csrf
-                        <button type="submit" class="add-to-cart-btn">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="add-to-cart-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
                     </form>
-                    <a href="{{ route('product.show', $product->id) }}" class="view-details-btn">
-                        <i class="fas fa-eye"></i> View Details
+                @else
+                    <a href="{{ route('login') }}?redirect={{ url()->current() }}" class="add-to-cart-btn">
+                        <i class="fas fa-shopping-cart"></i> Login to Buy
                     </a>
-                </div>
+                @endif
+                <a href="{{ route('product.show', $product->id) }}" class="view-details-btn">
+                    <i class="fas fa-eye"></i> View Details
+                </a>
             </div>
         </div>
-        @endforeach
     </div>
+    @endforeach
+</div>
+
+@if(session('cart_success'))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    Swal.fire({
+        title: "Added to Cart!",
+        text: "{{ session('cart_success') }}",
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#913333"
+    });
+});
+</script>
+@endif
     
     @if($products->isEmpty())
     <div class="no-products-found">
@@ -545,27 +575,79 @@
     }
 </style>
 
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Mobile menu toggle
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.querySelector('.menu-toggle');
-        const navMenu = document.getElementById('navMenu');
-        
-        menuToggle.addEventListener('click', function() {
-            navMenu.classList.toggle('show');
+document.addEventListener("DOMContentLoaded", function() {
+    // Fetch and show cart count from DB (or localStorage for guests)
+    const cartCountElement = document.getElementById("cart-count");
+
+    function fetchCartCount() {
+        fetch('/cart/count')
+            .then(response => response.json())
+            .then(data => {
+                if (cartCountElement) {
+                    cartCountElement.textContent = data.count;
+                }
+            })
+            .catch(() => {
+                // Fallback for guests
+                if (cartCountElement) {
+                    let guestCart = JSON.parse(localStorage.getItem("cart")) || [];
+                    cartCountElement.textContent = guestCart.length;
+                }
+            });
+    }
+
+    fetchCartCount();
+
+    // AJAX Add to Cart
+    const addToCartForms = document.querySelectorAll('.cart-add-form');
+    addToCartForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            submitBtn.disabled = true;
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: new URLSearchParams(new FormData(form))
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                fetchCartCount(); // Always refresh from DB after add-to-cart!
+                Swal.fire({
+                    title: "Added to Cart!",
+                    text: data.message || "Product added to cart successfully",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                    confirmButtonColor: "#913333"
+                });
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: "Error",
+                    text: "There was a problem adding this item to your cart. Please try again or log in if you haven't already.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                    confirmButtonColor: "#913333"
+                });
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            });
         });
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const isClickInsideMenu = navMenu.contains(event.target);
-            const isClickOnToggle = menuToggle.contains(event.target);
-            
-            if (!isClickInsideMenu && !isClickOnToggle && navMenu.classList.contains('show')) {
-                navMenu.classList.remove('show');
-            }
-        });
-                
     });
+});
 </script>
 <script src="js/navbar-footer.js"></script>
 @endsection

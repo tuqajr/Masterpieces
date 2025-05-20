@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
+
 // Static Pages
 Route::view('/', 'welcome')->name('home');
 Route::view('/about', 'about')->name('about');
@@ -44,20 +45,28 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Shop Routes
+// Shop and Product
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
-
-// Product Routes
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 
-// Cart Routes
+// Cart (auth required)
 Route::middleware('auth')->group(function () {
-    Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::get('/cart', [CartController::class, 'showCart'])->name('cart.show');
+    Route::post('/cart/add/{product}', [CartController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 });
+
+// routes/web.php or routes/api.php
+Route::get('/cart/count', function () {
+    if (Auth::check()) {
+        $count = \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity');
+        return response()->json(['count' => $count]);
+    } else {
+        return response()->json(['count' => 0]);
+    }
+})->name('cart.count');
 
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

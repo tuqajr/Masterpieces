@@ -67,9 +67,10 @@ protected $fillable = [
     'image',
 ];
 
-    public function show(Product $product)
+     public function show($id)
     {
-        return view('admin.products.show', compact('product'));
+        $product = Product::findOrFail($id);
+        return view('product.show', compact('product'));
     }
 
     /**

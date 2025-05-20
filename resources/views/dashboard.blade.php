@@ -533,14 +533,16 @@
     <div class="navbar">
         <button class="menu-toggle" id="menuToggle">☰</button>
         <div class="icons">
-            @if(Auth::check())
-            <a href="{{ route('cart.show') }}" class="cart-icon">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="cart-count">
+        <a href="{{ route('cart.show') }}" class="cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-count">
+                @auth
                     {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
-                </span>
-            </a>
-            @endif
+                @else
+                    0
+                @endauth
+            </span>
+        </a>
 
             @if(Auth::check())
             <div class="login-register-dropdown">
@@ -787,37 +789,63 @@
             document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
         });
 
-        // Update cart count
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+         document.addEventListener("DOMContentLoaded", function() {
+    const cartCountElement = document.getElementById("cart-count");
 
-        function updateCartCount() {
-            const cartCountElement = document.getElementById("cart-count");
-            if (cartCountElement) {
-                cartCountElement.textContent = cart.length;
-            }
-        }
+    // Function to fetch cart count from server
+    function fetchCartCount() {
+        fetch('/cart/count')
+            .then(response => response.json())
+            .then(data => {
+                if (cartCountElement) {
+                    cartCountElement.textContent = data.count;
+                }
+            })
+            .catch(() => {
+                // Fallback: for guests, use localStorage
+                if (cartCountElement) {
+                    let guestCart = JSON.parse(localStorage.getItem("cart")) || [];
+                    cartCountElement.textContent = guestCart.length;
+                }
+            });
+    }
 
-        document.addEventListener("DOMContentLoaded", updateCartCount);
+    fetchCartCount();
 
-        // Mobile menu toggle functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navMenu = document.getElementById('navMenu');
-    
-    menuToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('show');
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(event) {
-        const isClickInsideMenu = navMenu.contains(event.target);
-        const isClickOnToggle = menuToggle.contains(event.target);
-        
-        if (!isClickInsideMenu && !isClickOnToggle && navMenu.classList.contains('show')) {
-            navMenu.classList.remove('show');
-        }
-    });
+    // Optionally, re-call fetchCartCount after AJAX add-to-cart or remove, if you use AJAX for those
+    // For example, after a successful add-to-cart:
+    // fetchCartCount();
 });
+       document.addEventListener("DOMContentLoaded", function() {
+       
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        if (menuToggle && navMenu) {
+            menuToggle.addEventListener('click', function() {
+                navMenu.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', function(event) {
+                const isClickInsideMenu = navMenu.contains(event.target);
+                const isClickOnToggle = menuToggle.contains(event.target);
+                
+                if (!isClickInsideMenu && !isClickOnToggle && navMenu.classList.contains('show')) {
+                    navMenu.classList.remove('show');
+                }
+            });
+        }
+        
+        const quantityInputs = document.querySelectorAll('.quantity-form input[name="quantity"]');
+        if (quantityInputs) {
+            quantityInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                   
+                });
+            });
+        }
+    
+        });
     </script>
         <script src="js/navbar-footer.js"></script>
 

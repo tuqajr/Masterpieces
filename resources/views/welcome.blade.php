@@ -31,16 +31,16 @@
 <body>
     <header>
     <div class="navbar">
-        <div class="icons">
+         <div class="icons">
         @if(Auth::check())
-    <a href="{{ route('cart.show') }}" class="cart-icon">
-        <i class="fas fa-shopping-cart"></i>
-        <span id="cart-count">
-            {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
-        </span>
-    </a>
+        <a href="{{ route('cart.show') }}" class="cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-count">
+                {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
+            </span>
+        </a>
         @endif
-
+        
         @if(Auth::check())
     <div class="login-register-dropdown">
         <a href="#" class="dropdown-toggle" style="display: flex; align-items: center; white-space: nowrap;">
@@ -495,33 +495,38 @@
         }
         
         // Initialize cart count on page load
-        document.addEventListener("DOMContentLoaded", function() {
-            updateCartCount();
+       document.addEventListener("DOMContentLoaded", function() {
+        // Mobile menu toggle functionality
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        if (menuToggle && navMenu) {
+            menuToggle.addEventListener('click', function() {
+                navMenu.classList.toggle('show');
+            });
             
-            // Add to cart functionality
-            const addToCartButtons = document.querySelectorAll('.add-to-cart');
-            addToCartButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const name = this.getAttribute('data-name');
-                    const price = this.getAttribute('data-price');
-                    const image = this.getAttribute('data-image') || '/api/placeholder/100/100';
-                    
-                    const product = {
-                        id: Date.now(),
-                        name: name,
-                        price: price,
-                        image: image,
-                        quantity: 1
-                    };
-                    
-                    cart.push(product);
-                    localStorage.setItem("cart", JSON.stringify(cart));
-                    updateCartCount();
-                    
-                    // Animation or notification here
-                    alert(`${name} added to cart!`);
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideMenu = navMenu.contains(event.target);
+                const isClickOnToggle = menuToggle.contains(event.target);
+                
+                if (!isClickInsideMenu && !isClickOnToggle && navMenu.classList.contains('show')) {
+                    navMenu.classList.remove('show');
+                }
+            });
+        }
+        
+        // Quantity input handling for cart items
+        const quantityInputs = document.querySelectorAll('.quantity-form input[name="quantity"]');
+        if (quantityInputs) {
+            quantityInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    // Optional: Auto-submit the form when quantity changes
+                    // this.closest('form').submit();
                 });
             });
+        }
+    
         });
     </script>
 </body>

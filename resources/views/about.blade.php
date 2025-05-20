@@ -488,16 +488,18 @@
 <header>
     <div class="navbar">
         <button class="menu-toggle" id="menuToggle">☰</button>
-        <div class="icons">
-            @if(Auth::check())
-            <a href="{{ route('cart.show') }}" class="cart-icon">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="cart-count">
+       <div class="icons">
+        <a href="{{ route('cart.show') }}" class="cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-count">
+                @auth
                     {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
-                </span>
-            </a>
-            @endif
-
+                @else
+                    0
+                @endauth
+            </span>
+        </a>
+                
             @if(Auth::check())
             <div class="login-register-dropdown">
                 <a href="#" class="dropdown-toggle" style="display: flex; align-items: center; white-space: nowrap;">
@@ -528,7 +530,6 @@
             </div>
             @endif
 
-            <a href="#"><i class="fas fa-search"></i></a>
         </div>
         <ul id="navMenu">
             <li><a href="{{ url('/') }}">Home</a></li>
@@ -649,25 +650,33 @@
     </footer>
 
     <script>
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+   document.addEventListener("DOMContentLoaded", function() {
+    const cartCountElement = document.getElementById("cart-count");
 
-        function updateCartCount() {
-            const cartCountElement = document.getElementById("cart-count");
-            if (cartCountElement) {
-                cartCountElement.textContent = cart.length;
-            }
-        }
+    // Function to fetch cart count from server
+    function fetchCartCount() {
+        fetch('/cart/count')
+            .then(response => response.json())
+            .then(data => {
+                if (cartCountElement) {
+                    cartCountElement.textContent = data.count;
+                }
+            })
+            .catch(() => {
+                // Fallback: for guests, use localStorage
+                if (cartCountElement) {
+                    let guestCart = JSON.parse(localStorage.getItem("cart")) || [];
+                    cartCountElement.textContent = guestCart.length;
+                }
+            });
+    }
 
-        document.addEventListener("DOMContentLoaded", updateCartCount);
+    fetchCartCount();
 
-        document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.getElementById('menuToggle');
-        const navMenu = document.getElementById('navMenu');
-        
-        menuToggle.addEventListener('click', function() {
-            navMenu.classList.toggle('show');
-        });
-    });
+    // Optionally, re-call fetchCartCount after AJAX add-to-cart or remove, if you use AJAX for those
+    // For example, after a successful add-to-cart:
+    // fetchCartCount();
+});
     </script>
         <script src="js/navbar-footer.js"></script>
 

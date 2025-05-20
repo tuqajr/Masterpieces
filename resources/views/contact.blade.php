@@ -307,12 +307,17 @@
   <body>
     <header>
         <div class="navbar">
-            <div class="icons">
-                <a href="{{ route('cart.show') }}" class="cart-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span id="cart-count">3</span>
-                </a>
-                
+             <div class="icons">
+        <a href="{{ route('cart.show') }}" class="cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-count">
+                @auth
+                    {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
+                @else
+                    0
+                @endauth
+            </span>
+        </a>
                 <div class="login-register-dropdown">
                 @if(Auth::check())
                     <a href="#" class="dropdown-toggle">
@@ -475,29 +480,45 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-        function updateCartCount() {
-            const cartCountElement = document.getElementById("cart-count");
-            if (cartCountElement) {
-                cartCountElement.textContent = cart.length;
-            }
-        }
-
         document.addEventListener("DOMContentLoaded", function() {
-            updateCartCount();
-            
-            const menuToggle = document.querySelector(".menu-toggle");
-            if (menuToggle) {
-                menuToggle.addEventListener("click", function () {
-                    const nav = document.querySelector(".navbar ul");
-                    nav.classList.toggle("show");
-                });
-            }
+    const cartCountElement = document.getElementById("cart-count");
 
-            // Close menu when clicking outside
+    // Function to fetch cart count from server
+    function fetchCartCount() {
+        fetch('/cart/count')
+            .then(response => response.json())
+            .then(data => {
+                if (cartCountElement) {
+                    cartCountElement.textContent = data.count;
+                }
+            })
+            .catch(() => {
+                // Fallback: for guests, use localStorage
+                if (cartCountElement) {
+                    let guestCart = JSON.parse(localStorage.getItem("cart")) || [];
+                    cartCountElement.textContent = guestCart.length;
+                }
+            });
+    }
+
+    fetchCartCount();
+
+    // Optionally, re-call fetchCartCount after AJAX add-to-cart or remove, if you use AJAX for those
+    // For example, after a successful add-to-cart:
+    // fetchCartCount();
+});
+        
+       document.addEventListener("DOMContentLoaded", function() {
+       
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        if (menuToggle && navMenu) {
+            menuToggle.addEventListener('click', function() {
+                navMenu.classList.toggle('show');
+            });
+            
             document.addEventListener('click', function(event) {
-                const navMenu = document.getElementById('navMenu');
                 const isClickInsideMenu = navMenu.contains(event.target);
                 const isClickOnToggle = menuToggle.contains(event.target);
                 
@@ -505,7 +526,19 @@
                     navMenu.classList.remove('show');
                 }
             });
-            
+        }
+        
+        const quantityInputs = document.querySelectorAll('.quantity-form input[name="quantity"]');
+        if (quantityInputs) {
+            quantityInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                   
+                });
+            });
+        }
+    
+        
+    
             // Email sending functionality
             emailjs.init('ocAT76gWIBqPj_Mx2');  
             
