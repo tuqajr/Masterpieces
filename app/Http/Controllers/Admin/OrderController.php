@@ -8,38 +8,55 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of the orders.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::latest()->paginate(10); // Fetch orders with pagination
+        $query = Order::with(['user', 'orderItems'])->latest();
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by payment status
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        // Search by order number or customer
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_email', 'like', "%{$search}%");
+            });
+        }
+
+        $orders = $query->paginate(15);
+
         return view('admin.orders.index', compact('orders'));
     }
 
-    /**
-     * Display the specified order.
-     */
-    public function show($id)
+    public function show(Order $order)
     {
-        $order = Order::findOrFail($id); // Find the order by ID or throw a 404
+        $order->load(['user', 'orderItems']);
         return view('admin.orders.show', compact('order'));
     }
 
-    /**
-     * Update the status of the specified order.
-     */
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|string|in:pending,processing,completed,canceled',
+            'status' => 'required|in:pending,confirmed,preparing,out_for_delivery,delivered,cancelled'
         ]);
 
-        $order = Order::findOrFail($id); // Find the order by ID or throw a 404
         $order->update([
             'status' => $request->status,
+            'delivered_at' => $request->status === 'delivered' ? now() : null
         ]);
 
-        return redirect()->route('admin.orders.index')->with('success', 'Order status updated successfully.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Order status updated successfully'
+        ]);
     }
 }

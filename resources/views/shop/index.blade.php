@@ -141,7 +141,7 @@
             <p class="product-price">${{ number_format($product->price, 2) }}</p>
             <div class="product-actions">
                 @if(Auth::check())
-                    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="cart-add-form">
+                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="cart-add-form">
                         @csrf
                         <input type="hidden" name="quantity" value="1">
                         <button type="submit" class="add-to-cart-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>

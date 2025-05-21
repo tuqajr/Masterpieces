@@ -188,13 +188,7 @@
                             <h4>Embroidered Wall Art</h4>
                             <p>Traditional wall art hanging featuring intricate Palestinian motifs</p>
                             <p class="price">$120.00</p>
-                            <button 
-                            class="add-to-cart" 
-                            data-name="Embroidered Wall Art" 
-                            data-price="$120.00" 
-                            data-image="{{ asset('images/product-1.png') }}">
-                            Add to Cart
-                        </button>
+                           
                         </div>
                     </div>
                     
@@ -208,13 +202,7 @@
                             <h4>Watch Embroidery Designs</h4>
                             <p>Handcrafted timepiece with traditional Tatreez patterns</p>
                             <p class="price">$75.00</p>
-                            <button 
-                            class="add-to-cart" 
-                            data-name="Watch Embroidery Designs" 
-                            data-price="$75.00" 
-                            data-image="{{ asset('images/product-2.jpeg') }}">
-                            Add to Cart
-                        </button>
+                            
                         </div>
                     </div>
                     
@@ -229,13 +217,7 @@
                             <h4>Custom Mug Design</h4>
                             <p>Modern Palestinian design for everyday inspiration</p>
                             <p class="price">$95.00</p>
-                            <button 
-                            class="add-to-cart" 
-                            data-name="Custom mug design and printing" 
-                            data-price="$95.00" 
-                            data-image="{{ asset('images/product-3.jpeg') }}">
-                            Add to Cart
-                        </button>
+                            
                         </div>
                     </div>
                     
@@ -269,12 +251,7 @@
                             </div>
                             <p class="price">$45.00</p>
                             <div class="btn-container">
-                            <button class="add-to-cart" 
-                                data-name="Basic Stitches Workshop" 
-                                data-price="45.00" 
-                                data-image="{{ asset('images/learn-1-p.jpeg') }}">
-                            Add to Cart
-                        </button>
+                           
                             </div>
                         </div>
                     </div>
@@ -294,12 +271,7 @@
                             </div>
                             <p class="price">$55.00</p>
                             <div class="btn-container">
-                            <button class="add-to-cart" 
-                                data-name="Pattern Creation Workshop" 
-                                data-price="55.00" 
-                                data-image="{{ asset('images/learn-2.jpeg') }}">
-                            Add to Cart
-                        </button>
+                          
                             </div>
                         </div>
                     </div>
@@ -319,12 +291,7 @@
                             </div>
                             <p class="price">$45.00</p>
                             <div class="btn-container">
-                            <button class="add-to-cart" 
-                                data-name="Design Transfer Workshop" 
-                                data-price="65.00" 
-                                data-image="{{ asset('images/learn-3.jpeg') }}">
-                            Add to Cart
-                        </button>
+                           
                             </div>
                         </div>
                     </div>

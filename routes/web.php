@@ -6,13 +6,13 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-
 
 // Static Pages
 Route::view('/', 'welcome')->name('home');
@@ -45,20 +45,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Shop and Product
+// Shop and Product Routes
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
+Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.show');
 
-// Cart (auth required)
-Route::middleware('auth')->group(function () {
-    Route::get('/cart', [CartController::class, 'showCart'])->name('cart.show');
-    Route::post('/cart/add/{product}', [CartController::class, 'addToCart'])->name('cart.add');
-    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
-    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-});
-
-// routes/web.php or routes/api.php
+// Cart Count API
 Route::get('/cart/count', function () {
     if (Auth::check()) {
         $count = \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity');
@@ -68,25 +60,53 @@ Route::get('/cart/count', function () {
     }
 })->name('cart.count');
 
-// Admin Routes
+// Cart Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+});
+
+// Order Routes (User)
+Route::middleware(['auth'])->group(function () {
+    // Submit order
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    
+    // Thank you page
+    Route::get('/orders/{order}/thank-you', [OrderController::class, 'thankYou'])->name('orders.thank-you');
+    
+    // Order history
+    Route::get('/my-orders', [OrderController::class, 'userOrders'])->name('orders.user');
+    
+    // Order details
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    
+    // Cancel order
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+});
+
+// Admin Routes (All in one group)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
+    
     // Products
     Route::resource('products', AdminProductController::class);
-
+    
     // Orders
-    Route::resource('orders', OrderController::class);
-    Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
-
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+    
     // Users
-    // Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
-    Route::get('/all_users', [UserController::class, 'index'])->name('all_user_dashboard');
-
-    Route::get('/creat_users', [UserController::class, 'create'])->name('users.create');
-
-    Route::get('/store_users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/all_users', [UserController::class, 'index'])->name('all_user_dashboard'); // Your custom route
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
 require __DIR__.'/auth.php';

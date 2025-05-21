@@ -11,28 +11,25 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
-        'total',
+        'customer_name',
+        'email',
+        'phone',
+        'address',
+        'city',
+        'postal_code',
         'status',
         'payment_method',
-        'shipping_address',
-        'billing_address',
-        'notes'
+        'notes',
+        'total'
     ];
 
-    /**
-     * Get the user that owns the order.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the order items.
-     */
     public function orderItems()
 {
     return $this->hasMany(OrderItem::class);
 }
-
 }

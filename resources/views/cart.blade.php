@@ -12,6 +12,7 @@
 
 <header>
     <div class="navbar">
+        <!-- Navbar content remains the same -->
         <div class="icons">
             @if(Auth::check())
             <a href="{{ route('cart.show') }}" class="cart-icon">
@@ -71,68 +72,141 @@
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
+    
     @if($cartItems->isEmpty())
         <div class="empty-cart">
             <p>Your cart is empty. <a href="{{ url('/shop') }}">Continue Shopping</a></p>
         </div>
     @else
-        <div class="cart-items">
-            @foreach($cartItems as $item)
-                <div class="cart-item">
-                   <div class="cart-item-image">
-    @if (Str::startsWith($item->product->image, 'http'))
-        <img src="{{ $item->product->image }}" alt="{{ $item->product->name }}">
-    @else
-        @php
-            // Always use products directory for the image path
-            $imagePath = $item->product->image ? 'storage/products/' . basename($item->product->image) : 'images/placeholder.png';
-        @endphp
-        <img src="{{ asset($imagePath) }}" alt="{{ $item->product->name }}">
-    @endif
-</div>
-                    <div class="cart-item-details">
-                        <h4>{{ $item->product->name }}</h4>
-                        <p>{{ Str::limit($item->product->description, 100) }}</p>
-                        <p class="price">${{ number_format($item->product->price, 2) }}</p>
-                        <form action="{{ route('cart.update') }}" method="POST" class="quantity-form">
-                            @csrf
-                            <input type="hidden" name="cart_item_id" value="{{ $item->id }}">
-                            <div class="quantity-control">
-                                <label for="quantity">Quantity:</label>
-                                <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" max="99">
-                                <button type="submit" class="update-btn">Update</button>
-                            </div>
-                        </form>
-                        <form action="{{ route('cart.remove') }}" method="POST" class="remove-form">
-                            @csrf
-                            <input type="hidden" name="cart_item_id" value="{{ $item->id }}">
-                            <button type="submit" class="remove-btn">Remove</button>
-                        </form>
+        <div id="cart-content" class="{{ $checkoutMode ? 'hidden' : '' }}">
+            <div class="cart-items">
+                @foreach($cartItems as $item)
+                    <div class="cart-item">
+                       <div class="cart-item-image">
+                            @if (Str::startsWith($item->product->image, 'http'))
+                                <img src="{{ $item->product->image }}" alt="{{ $item->product->name }}">
+                            @else
+                                @php
+                                    $imagePath = $item->product->image ? 'storage/products/' . basename($item->product->image) : 'images/placeholder.png';
+                                @endphp
+                                <img src="{{ asset($imagePath) }}" alt="{{ $item->product->name }}">
+                            @endif
+                        </div>
+                        <div class="cart-item-details">
+                            <h4>{{ $item->product->name }}</h4>
+                            <p>{{ Str::limit($item->product->description, 100) }}</p>
+                            <p class="price">${{ number_format($item->product->price, 2) }}</p>
+                            <form action="{{ route('cart.update') }}" method="POST" class="quantity-form">
+                                @csrf
+                                <input type="hidden" name="cart_item_id" value="{{ $item->id }}">
+                                <div class="quantity-control">
+                                    <label for="quantity">Quantity:</label>
+                                    <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" max="99">
+                                    <button type="submit" class="update-btn">Update</button>
+                                </div>
+                            </form>
+                            <form action="{{ route('cart.remove') }}" method="POST" class="remove-form">
+                                @csrf
+                                <input type="hidden" name="cart_item_id" value="{{ $item->id }}">
+                                <button type="submit" class="remove-btn">Remove</button>
+                            </form>
+                        </div>
+                        <div class="cart-item-total">
+                            <p>Total: ${{ number_format($item->product->price * $item->quantity, 2) }}</p>
+                        </div>
                     </div>
-                    <div class="cart-item-total">
-                        <p>Total: ${{ number_format($item->product->price * $item->quantity, 2) }}</p>
-                    </div>
+                @endforeach
+            </div>
+            <div class="cart-summary">
+                <h3>Order Summary</h3>
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>${{ number_format($total, 2) }}</span>
                 </div>
-            @endforeach
+                <div class="summary-row">
+                    <span>Shipping:</span>
+                    <span>Free</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span>${{ number_format($total, 2) }}</span>
+                </div>
+                <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
+            </div>
         </div>
-        <div class="cart-summary">
-            <h3>Order Summary</h3>
-            <div class="summary-row">
-                <span>Subtotal:</span>
-                <span>${{ number_format($total, 2) }}</span>
+
+        <!-- Checkout Form Section -->
+        <div id="checkout-form" class="{{ !$checkoutMode ? 'hidden' : '' }}">
+            <div class="checkout-container">
+                <h2>Shipping Information</h2>
+                <form action="{{ route('orders.store') }}" method="POST">
+                    @csrf
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required value="{{ Auth::user()->name ?? '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required value="{{ Auth::user()->email ?? '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <input type="text" id="address" name="address" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" required>
+                        </div>
+                        
+                        <div class="form-group half">
+                            <label for="postal_code">Postal Code</label>
+                            <input type="text" id="postal_code" name="postal_code" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Order Notes (Optional)</label>
+                        <textarea id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    
+                    <h2>Payment Method</h2>
+                    <div class="payment-method">
+                        <div class="payment-option">
+                            <input type="radio" id="cash_on_delivery" name="payment_method" value="cash_on_delivery" checked>
+                            <label for="cash_on_delivery">Cash on Delivery</label>
+                        </div>
+                    </div>
+                    
+                    <div class="order-summary">
+                        <h3>Order Summary</h3>
+                        @foreach($cartItems as $item)
+                            <div class="summary-item">
+                                <span class="item-name">{{ $item->product->name }} × {{ $item->quantity }}</span>
+                                <span class="item-price">${{ number_format($item->product->price * $item->quantity, 2) }}</span>
+                            </div>
+                        @endforeach
+                        
+                        <div class="summary-total">
+                            <span>Total:</span>
+                            <span>${{ number_format($total, 2) }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button type="button" id="back-to-cart" class="secondary-btn">Back to Cart</button>
+                        <button type="submit" class="primary-btn">Place Order</button>
+                    </div>
+                </form>
             </div>
-            <div class="summary-row">
-                <span>Shipping:</span>
-                <span>Free</span>
-            </div>
-            <div class="summary-row total">
-                <span>Total:</span>
-                <span>${{ number_format($total, 2) }}</span>
-            </div>
-            <form action="{{ route('cart.checkout') }}" method="POST">
-                @csrf
-                <button type="submit" class="checkout-btn">Proceed to Checkout</button>
-            </form>
         </div>
     @endif
 </div>
@@ -140,6 +214,7 @@
 <!-- Footer Section -->
 <footer>
     <div class="footer-container">
+        <!-- Footer content remains the same -->
         <div class="footer-section">
             <h4>Tatreez Traditions</h4>
             <p>Preserving Palestinian embroidery heritage through authentic products and educational resources.</p>
@@ -179,7 +254,6 @@
 
 
 <style>
-   
     * {
         margin: 0;
         padding: 0;
@@ -209,6 +283,11 @@
         font-family: 'Reem Kufi', sans-serif;
     }
     
+    .hidden {
+        display: none;
+    }
+    
+    /* Cart Styles (from original) */
     .empty-cart {
         text-align: center;
         padding: 40px;
@@ -356,7 +435,163 @@
         font-weight: bold;
         letter-spacing: 0.5px;
     }
-     /* Footer Styles */
+    
+    /* Checkout Form Styles */
+    .checkout-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+    
+    .checkout-container h2 {
+        color: rgb(145, 51, 51);
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-group.half {
+        flex: 1;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #555;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: 'Reem Kufi', sans-serif;
+        font-size: 16px;
+    }
+    
+    .payment-method {
+        margin: 20px 0;
+    }
+    
+    .payment-option {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+    
+    .payment-option input[type="radio"] {
+        margin-right: 10px;
+    }
+    
+    .order-summary {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 4px;
+        margin: 30px 0;
+    }
+    
+    .order-summary h3 {
+        color: rgb(145, 51, 51);
+        margin-bottom: 15px;
+        font-size: 1.3rem;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px solid #ddd;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
+    
+    .primary-btn, .secondary-btn {
+        padding: 12px 25px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .primary-btn {
+        background-color: rgb(145, 51, 51);
+        color: white;
+        border: none;
+    }
+    
+    .primary-btn:hover {
+        background-color: #d9534f;
+    }
+    
+    .secondary-btn {
+        background-color: transparent;
+        color: #6c757d;
+        border: 1px solid #6c757d;
+    }
+    
+    .secondary-btn:hover {
+        background-color: #f1f1f1;
+    }
+    
+    /* Alert Messages */
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+    
+    .alert-success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+    
+    .alert-danger {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    
+    /* Footer Styles */
     footer {
         background-color: #913333;
         color: white;
@@ -445,7 +680,37 @@
         color: #fff;
         margin: 0;
     }
-     @media (max-width: 768px) {
+    
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .cart-item {
+            flex-direction: column;
+        }
+        
+        .cart-item-image {
+            width: 100%;
+            margin-right: 0;
+            margin-bottom: 15px;
+        }
+        
+        .cart-item-total {
+            text-align: left;
+            margin-top: 15px;
+        }
+        
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .actions {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .primary-btn, .secondary-btn {
+            width: 100%;
+        }
         
         .footer-container {
             flex-direction: column;
@@ -454,37 +719,53 @@
         .footer-section {
             margin-bottom: 30px;
         }
-        
-        .filter-group {
-            flex-basis: 100%;
-            margin-right: 0;
-        }
     }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-        button.addEventListener('click', async (event) => {
-            event.preventDefault();
-            const form = button.closest('form');
-            const formData = new FormData(form);
+        // Add to cart functionality (from original script)
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const form = button.closest('form');
+                const formData = new FormData(form);
 
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                },
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('cart-count').textContent = data.cart_count;
+                    Swal.fire('Success', data.message, 'success');
+                }
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                document.getElementById('cart-count').textContent = data.cart_count;
-                Swal.fire('Success', data.message, 'success');
-            }
         });
+        
+        // Checkout process toggle
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const backToCartBtn = document.getElementById('back-to-cart');
+        const cartContent = document.getElementById('cart-content');
+        const checkoutForm = document.getElementById('checkout-form');
+        
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', function() {
+                cartContent.classList.add('hidden');
+                checkoutForm.classList.remove('hidden');
+            });
+        }
+        
+        if (backToCartBtn) {
+            backToCartBtn.addEventListener('click', function() {
+                checkoutForm.classList.add('hidden');
+                cartContent.classList.remove('hidden');
+            });
+        }
     });
-});
 </script>
 @endsection

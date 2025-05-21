@@ -43,21 +43,19 @@ public function store(Request $request)
         'name' => $validated['name'],
         'description' => $validated['description'],
         'price' => $validated['price'],
-        'image' => null, // Default to null if no image
+        'image' => null,
     ];
 
-    // Handle image upload
     if ($request->hasFile('image')) {
         $imagePath = $request->file('image')->store('products', 'public');
-        $productData['image'] = $imagePath; // Store just the path, not '/storage/'
+        $productData['image'] = $imagePath;
     }
 
-    // Create product
-    $product = Product::create($productData);
+    Product::create($productData);
 
-    return redirect()->route('admin.products.index')
-        ->with('success', 'Product created successfully!');
+    return redirect()->route('admin.products.index')->with('success', 'Product created successfully!');
 }
+
 
 
 protected $fillable = [
@@ -70,7 +68,7 @@ protected $fillable = [
      public function show($id)
     {
         $product = Product::findOrFail($id);
-        return view('product.show', compact('product'));
+        return view('products.show', compact('product'));
     }
 
     /**

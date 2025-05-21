@@ -605,7 +605,7 @@
             <div class="milestone">
                 <div class="milestone-content">
                     <div class="milestone-year">2025</div>
-                    <p>Launched our first collection of authentic Tatreez products and educational materials.</p>
+                    <p>Launched our first collection of authentic Tatreez products,educational materials and custom orders.</p>
                 </div>
             </div>
             <div class="milestone">
