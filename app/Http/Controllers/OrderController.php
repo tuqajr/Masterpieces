@@ -3,127 +3,118 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\CartItem;
 use App\Models\OrderItem;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'payment_method' => 'required|in:cash_on_delivery',
-        ]);
-
-        $cartItems = CartItem::where('user_id', Auth::id())
-            ->with('product')
-            ->get();
-
-        if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.show')->with('error', 'Your cart is empty.');
-        }
-
-        $total = 0;
-        foreach ($cartItems as $item) {
-            $total += $item->product->price * $item->quantity;
-        }
-
-        DB::beginTransaction();
-        
         try {
+            DB::beginTransaction();
+            
+            // Get cart items from session
+            $cart = session('cart', []);
+            
+            if (empty($cart)) {
+                return redirect()->back()->with('error', 'Your cart is empty');
+            }
+            
+            // Calculate total
+            $total = 0;
+            foreach ($cart as $item) {
+                $total += $item['price'] * $item['quantity'];
+            }
+            
+            // Create order
             $order = Order::create([
                 'user_id' => Auth::id(),
-                'customer_name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'city' => $request->city,
-                'postal_code' => $request->postal_code,
-                'payment_method' => $request->payment_method,
-                'notes' => $request->notes,
-                'status' => 'pending',
                 'total' => $total,
+                'status' => 'pending',
+                'delivery_date' => now()->addDays(7), // Delivery in 7 days
+                'shipping_address' => $request->shipping_address ?? Auth::user()->address,
+                'phone' => $request->phone ?? Auth::user()->phone,
             ]);
-
-            foreach ($cartItems as $item) {
+            
+            // Create order items
+            foreach ($cart as $productId => $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'product_name' => $item->product->name,
-                    'quantity' => $item->quantity,
-                    'price' => $item->product->price,
+                    'product_id' => $productId,
+                    'product_name' => $item['name'],
+                    'product_price' => $item['price'],
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $item['price'] * $item['quantity']
                 ]);
+                
+                // Update product stock
+                $product = Product::find($productId);
+                if ($product) {
+                    $product->decrement('stock', $item['quantity']);
+                }
             }
-
-            CartItem::where('user_id', Auth::id())->delete();
+            
+            // Clear cart
+            session()->forget('cart');
+            
             DB::commit();
-
-            return redirect()->route('orders.thankyou', $order->id);
+            
+            return redirect()->route('orders.show', $order->id)
+                           ->with('success', 'Order placed successfully!');
+                           
         } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
+            DB::rollback();
+            return redirect()->back()->with('error', 'Failed to place order. Please try again.');
         }
     }
-
-    public function thankyou($id)
+    
+    public function show($id)
     {
-        $order = Order::with('items')->findOrFail($id);
+        $order = Order::with('orderItems')->findOrFail($id);
         
-        if ($order->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
+        // Check if user owns this order or is admin
+        if (Auth::id() !== $order->user_id && !Auth::user()->is_admin) {
+            abort(403);
         }
-
-        return view('orders.thankyou', compact('order'));
-    }
-
-    public function userOrders()
-{
-    /** @var \App\Models\User $user */
-    $user = Auth::user();
-
-    $orders = $user->orders()
-        ->with('orderItems')
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
-
-    return view('orders.user-orders', compact('orders'));
-}
-    public function show(Order $order)
-    {
-        $user = Auth::user();
-
-        if ($order->user_id !== Auth::id() && Auth::user()->role !== 'admin')
-         {
-            abort(403, 'Unauthorized');
-        }
-
-        $order->load('orderItems');
+        
         return view('orders.show', compact('order'));
     }
-
-    public function cancel(Order $order)
+    
+    public function index()
     {
+        $orders = Order::with('orderItems')
+                      ->where('user_id', Auth::id())
+                      ->orderBy('created_at', 'desc')
+                      ->get();
+                      
+        return view('orders.index', compact('orders'));
+    }
+    
+    public function cancel($id)
+    {
+        $order = Order::findOrFail($id);
+        
+        if (Auth::id() !== $order->user_id) {
+            abort(403);
+        }
+        
         if ($order->status !== 'pending') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order cannot be cancelled'
-            ]);
+            return redirect()->back()->with('error', 'Cannot cancel this order');
+        }
+        
+        // Restore product stock
+        foreach ($order->orderItems as $item) {
+            $product = Product::find($item->product_id);
+            if ($product) {
+                $product->increment('stock', $item->quantity);
+            }
         }
         
         $order->update(['status' => 'cancelled']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Order cancelled successfully'
-        ]);
+        
+        return redirect()->back()->with('success', 'Order cancelled successfully');
     }
 }

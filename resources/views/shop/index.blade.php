@@ -4,7 +4,7 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 
-<link rel="stylesheet" href="css/navbar-footer.css">
+    <link rel="stylesheet" href="css/navbar-footer.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Orpheus+Pro&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,9 +14,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
 <header>
-<div class="navbar">
-         <div class="icons">
-        <a href="{{ route('cart.show') }}" class="cart-icon">
+    <div class="navbar">
+          <div class="icons">
+            <a href="{{ route('cart.show') }}" class="cart-icon">
             <i class="fas fa-shopping-cart"></i>
             <span id="cart-count">
                 @auth
@@ -26,7 +26,7 @@
                 @endauth
             </span>
         </a>
-            
+                
             @if(Auth::check())
                 <div class="login-register-dropdown">
                     <a href="#" class="dropdown-toggle">
@@ -56,13 +56,13 @@
             @endif
         </div>
         
-        <ul id="navMenu">
+       <ul id="navMenu">
             <li><a href="{{ url('/') }}">Home</a></li>
             <li><a href="{{ url('/shop') }}">Shop</a></li>
-            <li><a href="{{ url('/about') }}">About</a></li>
             <li><a href="{{ url('/learn') }}">Learn</a></li>
+            <li><a href="{{ url('/about') }}">About</a></li>
             <li><a href="{{ url('/contact') }}">Contact</a></li>
-        </ul>
+            </ul>
         
         <div class="logo-container">
             <span class="logo-text">غرزه</span>
@@ -580,6 +580,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navMenu = document.querySelector('#navMenu');
+    
+    menuToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('show');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.navbar') && navMenu.classList.contains('show')) {
+            navMenu.classList.remove('show');
+        }
+    });
+});
+
 document.addEventListener("DOMContentLoaded", function() {
     // Fetch and show cart count from DB (or localStorage for guests)
     const cartCountElement = document.getElementById("cart-count");

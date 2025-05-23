@@ -109,4 +109,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
+
+Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+
 require __DIR__.'/auth.php';

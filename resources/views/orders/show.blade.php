@@ -17,6 +17,29 @@
         </div>
     </div>
 
+    <!-- Order Progress Bar -->
+    @php
+        $progressWidth = match($order->status) {
+            'pending' => '25%',
+            'confirmed' => '50%',
+            'preparing' => '75%',
+            'delivered' => '100%',
+            default => '25%'
+        };
+    @endphp
+    
+    <div class="progress-container">
+        <div class="progress-bar">
+         <div class="progress-fill" data-progress="{{ $progressWidth }}"></div>
+        </div>
+        <div class="progress-steps">
+            <span class="{{ in_array($order->status, ['pending', 'confirmed', 'preparing', 'delivered']) ? 'active' : '' }}">Pending</span>
+            <span class="{{ in_array($order->status, ['confirmed', 'preparing', 'delivered']) ? 'active' : '' }}">Confirmed</span>
+            <span class="{{ in_array($order->status, ['preparing', 'delivered']) ? 'active' : '' }}">Preparing</span>
+            <span class="{{ $order->status == 'delivered' ? 'active' : '' }}">Delivered</span>
+        </div>
+    </div>
+
     <div class="order-details-grid">
         <!-- Order Information -->
         <div class="details-card">
@@ -165,6 +188,8 @@
 </div>
 
 <style>
+
+    
 .order-details-container {
     max-width: 1000px;
     margin: 0 auto;
@@ -235,6 +260,41 @@
 
 .status-paid {
     color: #28a745;
+    font-weight: 600;
+}
+
+.progress-container {
+    margin-bottom: 30px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    transition: width 0.3s ease;
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.progress-steps span {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.progress-steps span.active {
+    color: #007bff;
     font-weight: 600;
 }
 
@@ -454,12 +514,15 @@
         width: 100%;
         justify-content: center;
     }
+    
+    .progress-steps {
+        font-size: 0.8rem;
+    }
 }
 </style>
 
 <script>
 function trackOrder(orderNumber) {
-    // This would integrate with your order tracking system
     alert('Order tracking for #' + orderNumber + ' - Feature coming soon!');
 }
 
@@ -469,7 +532,6 @@ function printOrder() {
 
 function cancelOrder(orderId) {
     if (confirm('Are you sure you want to cancel this order?')) {
-        // Send AJAX request to cancel order
         fetch(`/orders/${orderId}/cancel`, {
             method: 'POST',
             headers: {

@@ -605,13 +605,13 @@
             @endif
         </div>
         
-        <ul id="navMenu">
+       <ul id="navMenu">
             <li><a href="{{ url('/') }}">Home</a></li>
             <li><a href="{{ url('/shop') }}">Shop</a></li>
-            <li><a href="{{ url('/about') }}">About</a></li>
             <li><a href="{{ url('/learn') }}">Learn</a></li>
+            <li><a href="{{ url('/about') }}">About</a></li>
             <li><a href="{{ url('/contact') }}">Contact</a></li>
-        </ul>
+            </ul>
         
         <div class="logo-container">
             <span class="logo-text">غرزه</span>
@@ -748,24 +748,21 @@ document.addEventListener("DOMContentLoaded", function() {
 
     
     // Mobile menu toggle functionality
+   document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.querySelector('.menu-toggle');
-    const navMenu = document.getElementById('navMenu');
+    const navMenu = document.querySelector('#navMenu');
     
-    if (menuToggle && navMenu) {
-        menuToggle.addEventListener('click', function() {
-            navMenu.classList.toggle('show');
-        });
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const isClickInsideMenu = navMenu.contains(event.target);
-            const isClickOnToggle = menuToggle.contains(event.target);
-            
-            if (!isClickInsideMenu && !isClickOnToggle && navMenu.classList.contains('show')) {
-                navMenu.classList.remove('show');
-            }
-        });
-    }
+    menuToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('show');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.navbar') && navMenu.classList.contains('show')) {
+            navMenu.classList.remove('show');
+        }
+    });
+});
     
     // Quantity input handling for cart items
     const quantityInputs = document.querySelectorAll('.quantity-form input[name="quantity"]');

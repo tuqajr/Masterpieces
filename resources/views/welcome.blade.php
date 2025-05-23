@@ -87,7 +87,10 @@
                 <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Tatreez Logo">
                
             </div>
-            
+              
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
            
         </div>
     </header>
@@ -462,26 +465,21 @@
         }
         
         // Initialize cart count on page load
-       document.addEventListener("DOMContentLoaded", function() {
-        // Mobile menu toggle functionality
-        const menuToggle = document.querySelector('.menu-toggle');
-        const navMenu = document.getElementById('navMenu');
-        
-        if (menuToggle && navMenu) {
-            menuToggle.addEventListener('click', function() {
-                navMenu.classList.toggle('show');
-            });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', function(event) {
-                const isClickInsideMenu = navMenu.contains(event.target);
-                const isClickOnToggle = menuToggle.contains(event.target);
-                
-                if (!isClickInsideMenu && !isClickOnToggle && navMenu.classList.contains('show')) {
-                    navMenu.classList.remove('show');
-                }
-            });
+      document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navMenu = document.querySelector('#navMenu');
+    
+    menuToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('show');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.navbar') && navMenu.classList.contains('show')) {
+            navMenu.classList.remove('show');
         }
+    });
+
         
         // Quantity input handling for cart items
         const quantityInputs = document.querySelectorAll('.quantity-form input[name="quantity"]');

@@ -12,13 +12,15 @@ class CartController extends Controller
     public function show()
     {
         $cartItems = CartItem::where('user_id', Auth::id())
-            ->with('product')
+            ->with(['product'])
             ->latest()
             ->get();
         
         $total = 0;
         foreach ($cartItems as $item) {
-            $total += $item->product->price * $item->quantity;
+            if ($item->product) {
+                $total += $item->product->price * $item->quantity;
+            }
         }
         
         // Default setting - not in checkout mode
@@ -27,7 +29,16 @@ class CartController extends Controller
         return view('cart', compact('cartItems', 'total', 'checkoutMode'));
     }
     
-    public function add(Request $request)
+    public function index()
+    {
+        $cartItems = CartItem::where('user_id', Auth::id())
+            ->with(['product'])
+            ->get();
+            
+        return view('cart.index', compact('cartItems'));
+    }
+    
+    public function addProduct(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
@@ -82,6 +93,10 @@ class CartController extends Controller
         $cartItem->quantity = $request->quantity;
         $cartItem->save();
         
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Cart updated successfully!']);
+        }
+        
         return redirect()->route('cart.show')->with('success', 'Cart updated successfully!');
     }
     
@@ -97,13 +112,28 @@ class CartController extends Controller
         
         $cartItem->delete();
         
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Item removed from cart!']);
+        }
+        
         return redirect()->route('cart.show')->with('success', 'Item removed from cart!');
+    }
+    
+    public function clear()
+    {
+        CartItem::where('user_id', Auth::id())->delete();
+        
+        if (request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Cart cleared']);
+        }
+        
+        return redirect()->route('cart.show')->with('success', 'Cart cleared successfully!');
     }
     
     public function checkout()
     {
         $cartItems = CartItem::where('user_id', Auth::id())
-            ->with('product')
+            ->with(['product'])
             ->latest()
             ->get();
         
@@ -114,7 +144,9 @@ class CartController extends Controller
         
         $total = 0;
         foreach ($cartItems as $item) {
-            $total += $item->product->price * $item->quantity;
+            if ($item->product) {
+                $total += $item->product->price * $item->quantity;
+            }
         }
         
         // Set checkout mode to true

@@ -6,26 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('customer_name');
-            $table->string('email');
-            $table->string('phone');
-            $table->text('address');
-            $table->string('city');
-            $table->string('postal_code');
-            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled'])->default('pending');
-            $table->enum('payment_method', ['cash_on_delivery'])->default('cash_on_delivery');
-            $table->text('notes')->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->decimal('total', 10, 2);
+            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled'])->default('pending');
+            $table->datetime('delivery_date');
+            $table->text('shipping_address');
+            $table->string('phone', 20);
+            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('paid');
+            $table->enum('payment_method', ['credit_card', 'paypal', 'cash_on_delivery'])->default('credit_card');
             $table->timestamps();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('orders');
     }

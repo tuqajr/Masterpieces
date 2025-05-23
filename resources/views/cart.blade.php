@@ -3,7 +3,7 @@
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<link rel="stylesheet" href="{{ asset('css/navbar-footer.css') }}">
+<link rel="stylesheet" href="css/navbar-footer.css">
 <link href="https://fonts.googleapis.com/css2?family=Orpheus+Pro&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,43 +12,52 @@
 
 <header>
     <div class="navbar">
-        <!-- Navbar content remains the same -->
         <div class="icons">
-            @if(Auth::check())
             <a href="{{ route('cart.show') }}" class="cart-icon">
                 <i class="fas fa-shopping-cart"></i>
                 <span id="cart-count">
-                    {{ $cartItems->sum('quantity') }}
+                    @auth
+                        {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
+                    @else
+                        0
+                    @endauth
                 </span>
             </a>
-            @endif
+                
             @if(Auth::check())
-            <div class="login-register-dropdown">
-                <a href="#" class="dropdown-toggle">
-                    <span style="margin-right: 5px;">Hello,</span>
-                    <span>{{ Auth::user()->name }}</span>
-                </a>
-                <div class="dropdown-content">
-                    <a href="{{ route('dashboard') }}">Dashboard</a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit">Logout</button>
-                    </form>
+                <div class="login-register-dropdown">
+                    <a href="#" class="dropdown-toggle">
+                        <span style="margin-right: 5px;">Welcome,</span>
+                        <span>{{ Auth::user()->name }}</span>
+                    </a>
+                    <div class="dropdown-content">
+                        @if(Auth::user()->is_admin)
+                            <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+                        @else
+                            <a href="{{ route('dashboard') }}">Dashboard</a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">Logout</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
             @else
-            <div class="login-register">
-                <a href="{{ route('login') }}">Login</a>
-                <a href="{{ route('register') }}">Register</a>
-            </div>
+                <div class="login-register-dropdown">
+                    <a href="#" class="dropdown-toggle">User</a>
+                    <div class="dropdown-content">
+                        <a href="{{ route('login') }}">Login</a>
+                        <a href="{{ route('register') }}">Register</a>
+                    </div>
+                </div>
             @endif
         </div>
         
         <ul id="navMenu">
             <li><a href="{{ url('/') }}">Home</a></li>
             <li><a href="{{ url('/shop') }}">Shop</a></li>
-            <li><a href="{{ url('/about') }}">About Us</a></li>
             <li><a href="{{ url('/learn') }}">Learn</a></li>
+            <li><a href="{{ url('/about') }}">About</a></li>
             <li><a href="{{ url('/contact') }}">Contact</a></li>
         </ul>
         
@@ -82,7 +91,7 @@
             <div class="cart-items">
                 @foreach($cartItems as $item)
                     <div class="cart-item">
-                       <div class="cart-item-image">
+                        <div class="cart-item-image">
                             @if (Str::startsWith($item->product->image, 'http'))
                                 <img src="{{ $item->product->image }}" alt="{{ $item->product->name }}">
                             @else
@@ -142,42 +151,42 @@
                 <form action="{{ route('orders.store') }}" method="POST">
                     @csrf
                     <div class="form-group">
-                        <label for="name">Full Name</label>
-                        <input type="text" id="name" name="name" required value="{{ Auth::user()->name ?? '' }}">
+                        <label for="customer_name">Full Name</label>
+                        <input type="text" id="customer_name" name="customer_name" required value="{{ Auth::user()->name ?? '' }}">
                     </div>
-                    
+                             
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" required value="{{ Auth::user()->email ?? '' }}">
                     </div>
-                    
+                             
                     <div class="form-group">
                         <label for="phone">Phone</label>
                         <input type="tel" id="phone" name="phone" required>
                     </div>
-                    
+                             
                     <div class="form-group">
                         <label for="address">Address</label>
                         <input type="text" id="address" name="address" required>
                     </div>
-                    
+                             
                     <div class="form-row">
                         <div class="form-group half">
                             <label for="city">City</label>
                             <input type="text" id="city" name="city" required>
                         </div>
-                        
+                                         
                         <div class="form-group half">
                             <label for="postal_code">Postal Code</label>
                             <input type="text" id="postal_code" name="postal_code" required>
                         </div>
                     </div>
-                    
+                             
                     <div class="form-group">
                         <label for="notes">Order Notes (Optional)</label>
                         <textarea id="notes" name="notes" rows="3"></textarea>
                     </div>
-                    
+                             
                     <h2>Payment Method</h2>
                     <div class="payment-method">
                         <div class="payment-option">
@@ -185,7 +194,7 @@
                             <label for="cash_on_delivery">Cash on Delivery</label>
                         </div>
                     </div>
-                    
+                             
                     <div class="order-summary">
                         <h3>Order Summary</h3>
                         @foreach($cartItems as $item)
@@ -194,13 +203,13 @@
                                 <span class="item-price">${{ number_format($item->product->price * $item->quantity, 2) }}</span>
                             </div>
                         @endforeach
-                        
+                                         
                         <div class="summary-total">
                             <span>Total:</span>
                             <span>${{ number_format($total, 2) }}</span>
                         </div>
                     </div>
-                    
+                             
                     <div class="actions">
                         <button type="button" id="back-to-cart" class="secondary-btn">Back to Cart</button>
                         <button type="submit" class="primary-btn">Place Order</button>
@@ -214,7 +223,6 @@
 <!-- Footer Section -->
 <footer>
     <div class="footer-container">
-        <!-- Footer content remains the same -->
         <div class="footer-section">
             <h4>Tatreez Traditions</h4>
             <p>Preserving Palestinian embroidery heritage through authentic products and educational resources.</p>
@@ -252,7 +260,6 @@
     </div>
 </footer>
 
-
 <style>
     * {
         margin: 0;
@@ -287,7 +294,7 @@
         display: none;
     }
     
-    /* Cart Styles (from original) */
+    /* Cart Styles */
     .empty-cart {
         text-align: center;
         padding: 40px;
@@ -438,137 +445,170 @@
     
     /* Checkout Form Styles */
     .checkout-container {
-        max-width: 800px;
+        max-width: 600px; 
         margin: 0 auto;
         background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-radius: 12px; 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
         padding: 30px;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
     
     .checkout-container h2 {
         color: rgb(145, 51, 51);
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         font-size: 1.8rem;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 15px;
+        text-align: center;
     }
     
     .form-group {
         margin-bottom: 20px;
     }
-    
+
     .form-row {
         display: flex;
-        gap: 20px;
+        gap: 15px;
         margin-bottom: 20px;
     }
     
     .form-group.half {
         flex: 1;
     }
-    
+
     label {
         display: block;
         margin-bottom: 8px;
-        font-weight: 500;
-        color: #555;
+        font-weight: 600;
+        color: #444;
+        font-size: 14px;
     }
-    
+
     input[type="text"],
     input[type="email"],
     input[type="tel"],
     textarea {
         width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
         font-family: 'Reem Kufi', sans-serif;
         font-size: 16px;
+        transition: border-color 0.3s ease;
+        box-sizing: border-box;
     }
     
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    textarea:focus {
+        outline: none;
+        border-color: rgb(145, 51, 51);
+        box-shadow: 0 0 0 3px rgba(145, 51, 51, 0.1);
+    }
+
     .payment-method {
-        margin: 20px 0;
+        margin: 25px 0;
     }
-    
+
     .payment-option {
         display: flex;
         align-items: center;
         padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
         margin-bottom: 10px;
-    }
-    
-    .payment-option input[type="radio"] {
-        margin-right: 10px;
-    }
-    
-    .order-summary {
         background-color: #f9f9f9;
-        padding: 20px;
-        border-radius: 4px;
-        margin: 30px 0;
+        transition: all 0.3s ease;
     }
     
+    .payment-option:hover {
+        border-color: rgb(145, 51, 51);
+        background-color: rgba(145, 51, 51, 0.05);
+    }
+
+    .payment-option input[type="radio"] {
+        margin-right: 12px;
+        transform: scale(1.2);
+    }
+
+    .order-summary {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 25px;
+        border-radius: 12px;
+        margin: 30px 0;
+        border: 1px solid #dee2e6;
+    }
+
     .order-summary h3 {
         color: rgb(145, 51, 51);
-        margin-bottom: 15px;
-        font-size: 1.3rem;
+        margin-bottom: 20px;
+        font-size: 1.4rem;
+        text-align: center;
     }
-    
+
     .summary-item {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 10px;
-        padding: 5px 0;
-        border-bottom: 1px solid #eee;
+        margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #ddd;
     }
-    
+
     .summary-total {
         display: flex;
         justify-content: space-between;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 2px solid #ddd;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 3px solid rgb(145, 51, 51);
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
+        color: rgb(145, 51, 51);
     }
-    
+
     .actions {
         display: flex;
         justify-content: space-between;
+        gap: 15px;
         margin-top: 30px;
     }
-    
+
     .primary-btn, .secondary-btn {
-        padding: 12px 25px;
-        border-radius: 4px;
+        flex: 1;
+        padding: 15px 25px;
+        border-radius: 8px;
         cursor: pointer;
         font-weight: bold;
         letter-spacing: 0.5px;
         font-size: 16px;
         transition: all 0.3s ease;
+        text-transform: uppercase;
     }
     
     .primary-btn {
-        background-color: rgb(145, 51, 51);
+        background: linear-gradient(135deg, rgb(145, 51, 51) 0%, #d9534f 100%);
         color: white;
         border: none;
+        box-shadow: 0 4px 15px rgba(145, 51, 51, 0.3);
     }
-    
+
     .primary-btn:hover {
-        background-color: #d9534f;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(145, 51, 51, 0.4);
     }
     
     .secondary-btn {
         background-color: transparent;
         color: #6c757d;
-        border: 1px solid #6c757d;
+        border: 2px solid #6c757d;
     }
-    
+
     .secondary-btn:hover {
-        background-color: #f1f1f1;
+        background-color: #6c757d;
+        color: white;
+        transform: translateY(-2px);
     }
     
     /* Alert Messages */
@@ -576,21 +616,22 @@
         padding: 15px;
         margin-bottom: 20px;
         border: 1px solid transparent;
-        border-radius: 4px;
+        border-radius: 8px;
+        font-weight: 500;
     }
-    
+
     .alert-success {
         color: #155724;
         background-color: #d4edda;
         border-color: #c3e6cb;
     }
-    
+
     .alert-danger {
         color: #721c24;
         background-color: #f8d7da;
         border-color: #f5c6cb;
     }
-    
+
     /* Footer Styles */
     footer {
         background-color: #913333;
@@ -698,6 +739,12 @@
             margin-top: 15px;
         }
         
+        .checkout-container {
+            max-width: 95%;
+            padding: 20px;
+            margin: 10px auto;
+        }
+        
         .form-row {
             flex-direction: column;
             gap: 0;
@@ -706,6 +753,10 @@
         .actions {
             flex-direction: column;
             gap: 10px;
+        }
+        
+        .checkout-container h2 {
+            font-size: 1.5rem;
         }
         
         .primary-btn, .secondary-btn {
@@ -723,26 +774,50 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Add to cart functionality (from original script)
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navMenu = document.querySelector('#navMenu');
+        
+        if (menuToggle && navMenu) {
+            menuToggle.addEventListener('click', function() {
+                navMenu.classList.toggle('show');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.navbar') && navMenu.classList.contains('show')) {
+                    navMenu.classList.remove('show');
+                }
+            });
+        }
+        
+        // Add to cart functionality
         document.querySelectorAll('.add-to-cart-btn').forEach(button => {
             button.addEventListener('click', async (event) => {
                 event.preventDefault();
                 const form = button.closest('form');
                 const formData = new FormData(form);
 
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    },
-                });
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                    });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('cart-count').textContent = data.cart_count;
-                    Swal.fire('Success', data.message, 'success');
+                    if (response.ok) {
+                        const data = await response.json();
+                        const cartCountElement = document.getElementById('cart-count');
+                        if (cartCountElement) {
+                            cartCountElement.textContent = data.cart_count;
+                        }
+                        // You can replace this with your preferred notification method
+                        alert(data.message);
+                    }
+                } catch (error) {
+                    console.error('Error adding to cart:', error);
                 }
             });
         });
@@ -753,14 +828,14 @@
         const cartContent = document.getElementById('cart-content');
         const checkoutForm = document.getElementById('checkout-form');
         
-        if (checkoutBtn) {
+        if (checkoutBtn && cartContent && checkoutForm) {
             checkoutBtn.addEventListener('click', function() {
                 cartContent.classList.add('hidden');
                 checkoutForm.classList.remove('hidden');
             });
         }
         
-        if (backToCartBtn) {
+        if (backToCartBtn && cartContent && checkoutForm) {
             backToCartBtn.addEventListener('click', function() {
                 checkoutForm.classList.add('hidden');
                 cartContent.classList.remove('hidden');
@@ -768,4 +843,5 @@
         }
     });
 </script>
+
 @endsection

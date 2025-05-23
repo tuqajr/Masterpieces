@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\CartItem;
 use App\Models\Traits\HasCartItems;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -86,5 +87,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(CartItem::class);
     }
+
+
+    public function userOrders()
+{
+    /** @var User $user */
+    $user = Auth::user();
+
+    $orders = $user->orders()
+        ->with('orderItems')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+    return view('orders.user-orders', compact('orders'));
+}
 }
 

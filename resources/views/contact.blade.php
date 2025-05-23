@@ -306,9 +306,9 @@
   </head>
   <body>
     <header>
-        <div class="navbar">
-             <div class="icons">
-        <a href="{{ route('cart.show') }}" class="cart-icon">
+    <div class="navbar">
+          <div class="icons">
+            <a href="{{ route('cart.show') }}" class="cart-icon">
             <i class="fas fa-shopping-cart"></i>
             <span id="cart-count">
                 @auth
@@ -318,47 +318,54 @@
                 @endauth
             </span>
         </a>
+                
+            @if(Auth::check())
                 <div class="login-register-dropdown">
-                @if(Auth::check())
                     <a href="#" class="dropdown-toggle">
                         <span style="margin-right: 5px;">Welcome,</span>
                         <span>{{ Auth::user()->name }}</span>
                     </a>
                     <div class="dropdown-content">
-                        <a href="{{ route('dashboard') }}">Dashboard</a>
+                        @if(Auth::user()->is_admin)
+                            <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+                        @else
+                            <a href="{{ route('dashboard') }}">Dashboard</a>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit">Logout</button>
                         </form>
                     </div>
-                @else
-                <a href="#" class="dropdown-toggle">User</a>
-                <div class="dropdown-content">
-                    <a href="{{ route('login') }}">Login</a>
-                    <a href="{{ route('register') }}">Register</a>
                 </div>
-                @endif
-            </div>
-            </div>
-            
-            <ul id="navMenu">
-                <li><a href="{{ url('/') }}">Home</a></li>
-                <li><a href="{{ url('/shop') }}">Shop</a></li>
-                <li><a href="{{ url('/about') }}">About</a></li>
-                <li><a href="{{ url('/learn') }}">Learn</a></li>
-                <li><a href="{{ url('/contact') }}">Contact</a></li>
-            </ul>
-            
-            <div class="logo-container">
-                <span class="logo-text">غرزه</span>
-                <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Logo">
-            </div>
-            
-            <div class="menu-toggle">
-                <i class="fas fa-bars"></i>
-            </div>
+            @else
+                <div class="login-register-dropdown">
+                    <a href="#" class="dropdown-toggle">User</a>
+                    <div class="dropdown-content">
+                        <a href="{{ route('login') }}">Login</a>
+                        <a href="{{ route('register') }}">Register</a>
+                    </div>
+                </div>
+            @endif
         </div>
-    </header>
+        
+       <ul id="navMenu">
+            <li><a href="{{ url('/') }}">Home</a></li>
+            <li><a href="{{ url('/shop') }}">Shop</a></li>
+            <li><a href="{{ url('/learn') }}">Learn</a></li>
+            <li><a href="{{ url('/about') }}">About</a></li>
+            <li><a href="{{ url('/contact') }}">Contact</a></li>
+            </ul>
+        
+        <div class="logo-container">
+            <span class="logo-text">غرزه</span>
+            <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Logo">
+        </div>
+        
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+    </div>
+</header>
 
     <div class="contact-container">
         <!-- Contact Info Section -->
@@ -508,26 +515,20 @@
     // fetchCartCount();
 });
         
-       document.addEventListener("DOMContentLoaded", function() {
-       
-        const menuToggle = document.querySelector('.menu-toggle');
-        const navMenu = document.getElementById('navMenu');
-        
-        if (menuToggle && navMenu) {
-            menuToggle.addEventListener('click', function() {
-                navMenu.classList.toggle('show');
-            });
-            
-            document.addEventListener('click', function(event) {
-                const isClickInsideMenu = navMenu.contains(event.target);
-                const isClickOnToggle = menuToggle.contains(event.target);
-                
-                if (!isClickInsideMenu && !isClickOnToggle && navMenu.classList.contains('show')) {
-                    navMenu.classList.remove('show');
-                }
-            });
+      document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navMenu = document.querySelector('#navMenu');
+    
+    menuToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('show');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.navbar') && navMenu.classList.contains('show')) {
+            navMenu.classList.remove('show');
         }
-        
+    });
         const quantityInputs = document.querySelectorAll('.quantity-form input[name="quantity"]');
         if (quantityInputs) {
             quantityInputs.forEach(input => {
