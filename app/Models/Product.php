@@ -26,4 +26,18 @@ class Product extends Model
         'image',
         'active', 
     ];
+
+
+   // Many-to-many: A product can be favorited by many users
+public function favoritedByUsers()
+{
+    return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+}
+
+// Helper method to check if a product is favorited by a specific user
+public function isFavoritedBy($user)
+{
+    return $this->favoritedByUsers()->where('user_id', $user->id)->exists();
+}
+
 }

@@ -11,20 +11,17 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     */
     public function __construct()
     {
         $this->middleware('auth');
         $this->middleware('admin');
     }
 
-    /**
-     * Show the admin dashboard with statistics.
-     */
     public function index()
     {
+
+
+        
         // Get count of users
         $userCount = User::count();
 

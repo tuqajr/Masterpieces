@@ -39,15 +39,24 @@ class ProfileController extends Controller
      * Display the user's profile with orders.
      */
     public function index(Request $request)
-    {
-        $user = $request->user();
-        $orders = Order::where('user_id', Auth::id())
-                       ->orderBy('created_at', 'desc')
-                       ->limit(5)
-                       ->get();
-        
-        return view('profile.index', compact('user', 'orders'));
-    }
+{
+    $user = $request->user();
+
+    $orders = Order::where('user_id', $user->id)
+                   ->orderBy('created_at', 'desc')
+                   ->limit(5)
+                   ->get();
+
+    // Load favorites with product relation
+    $favorites = $user->favorites()->with('product')->get();
+
+    return view('profile.index', [
+        'user' => $user,
+        'orders' => $orders,
+        'favorites' => $favorites,
+    ]);
+}
+
 
     /**
      * Display paginated orders for the user.
@@ -108,4 +117,5 @@ class ProfileController extends Controller
 
         return view('profile.show', compact('user', 'orders'));
     }
+    
 }

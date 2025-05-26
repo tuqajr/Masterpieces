@@ -4,13 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFavoritesTable extends Migration
+return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('favorites', function (Blueprint $table) {
@@ -19,18 +14,13 @@ class CreateFavoritesTable extends Migration
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->timestamps();
             
-            // Ensure a user can't favorite the same product multiple times
+            // Prevent duplicate favorites
             $table->unique(['user_id', 'product_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('favorites');
     }
-}
+};

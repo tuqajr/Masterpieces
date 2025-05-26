@@ -16,8 +16,10 @@ return new class extends Migration
             $table->datetime('delivery_date');
             $table->text('shipping_address');
             $table->string('phone', 20);
-            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('paid');
-            $table->enum('payment_method', ['credit_card', 'paypal', 'cash_on_delivery'])->default('credit_card');
+            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            $table->enum('payment_method', ['credit_card', 'paypal', 'cash_on_delivery'])->default('cash_on_delivery');
+            $table->datetime('delivery_date')->nullable()->after('status');
+
             $table->timestamps();
         });
     }

@@ -1,11 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+@include('partials.navbar')
 <div class="container order-details-container">
     <div class="page-header">
         <div class="header-left">
-            <a href="{{ route('orders.user') }}" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Orders
+                <a href="{{ route('orders.index') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Orders
             </a>
             <h1>Order Details</h1>
             <p class="order-number">Order #{{ $order->order_number }}</p>

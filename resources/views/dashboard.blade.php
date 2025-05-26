@@ -623,37 +623,35 @@
                 </div>
 
                 <!-- Recent Orders -->
-                <div class="recent-orders">
-    <h2>Recent Orders</h2>
-    
-    @if($orders->count() > 0)
-        @foreach($orders as $order)
-        <div class="order-card">
-            <div class="order-header">
-                <span>Order #: {{ $order->id }}</span>
-                <span>Date: {{ $order->created_at->format('d M, Y') }}</span>
-            </div>
-            
-            <div class="order-body">
-                <span>Status: {{ ucfirst($order->status) }}</span>
-                <span>Total: ${{ number_format($order->total, 2) }}</span>
-            </div>
-            
-            <div class="order-footer">
-                <a href="{{ route('orders.show', $order->id) }}" class="btn btn-primary">View Details</a>
+                <div class="profile-section">
+    <div class="section-title">
+        <i class="fas fa-shopping-bag"></i>
+        Recent Orders
+    </div>
+    <div class="section-content">
+        @if($orders->count() > 0)
+            @foreach($orders as $order)
+            <div class="order-item">
+                <p><strong>Order #:</strong> {{ $order->id }}</p>
+                <p><strong>Date:</strong> {{ $order->created_at->format('d M, Y') }}</p>
+                <p><strong>Status:</strong> 
+                    <span class="status-{{ strtolower($order->status) }}">
+                        {{ ucfirst($order->status) }}
+                    </span>
+                </p>
+                <p><strong>Total:</strong> ${{ number_format($order->total, 2) }}</p>
+                <a href="{{ route('orders.show', $order->id) }}" class="view-button">View Details</a>
                 @if($order->status === 'pending')
-                <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Cancel Order</button>
-                </form>
+                    <button class="cancel-button" onclick="cancelOrder('{{ $order->id }}')">
+                        Cancel Order
+                    </button>
                 @endif
             </div>
-        </div>
-        @endforeach
-    @else
-        <p>You haven't placed any orders yet.</p>
-    @endif
+            @endforeach
+        @else
+            <p>You haven't placed any orders yet.</p>
+        @endif
+    </div>
 </div>
 
                     <!-- Saved Items -->
@@ -664,11 +662,12 @@
             </div>
             <div class="section-content">
                 <div class="info-card">
-                    @if(count($favorites ?? []) > 0)
+                    
+                   @if(count($favorites ?? []) > 0)
                         <div class="saved-items-grid">
                             @foreach($favorites as $favorite)
                             <div class="saved-item">
-                                <img src="{{ asset($favorite->product->image) }}" alt="{{ $favorite->product->name }}">
+                            <img src="{{ $favorite->product->image ? asset($favorite->product->image) : asset('images/default.png') }}" alt="{{ $favorite->product->name }}">
                                 <h4>{{ $favorite->product->name }}</h4>
                                 <p>${{ number_format($favorite->product->price, 2) }}</p>
                                 <div class="saved-item-actions">
@@ -693,6 +692,7 @@
                             <i class="fas fa-store"></i> Browse Products
                         </a>
                     @endif
+
                 </div>
             </div>
         </div>

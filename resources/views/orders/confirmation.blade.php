@@ -1,5 +1,7 @@
 
 @section('content')
+@include('partials.navbar')
+
 <div class="container">
     <div class="order-confirmation">
         <div class="confirmation-header">

@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+@include('partials.navbar')
+
 <div class="container orders-container">
     <div class="page-header">
         <h1>My Orders</h1>

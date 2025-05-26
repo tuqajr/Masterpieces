@@ -3,42 +3,56 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Favorite;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 
 class FavoriteController extends Controller
 {
-    /**
-     * Toggle a product as favorite for the authenticated user
-     * Handles both regular form submissions and AJAX requests
-     */
-    public function toggle($productId)
+    public function toggle(Request $request)
     {
-        $user = Auth::user();
-        $product = Product::findOrFail($productId);
-    
-        // Toggle the favorite status
-        if ($user->favorites()->where('product_id', $productId)->exists()) {
-            $user->favorites()->detach($productId);
-            $status = 'removed';
+        $request->validate(['product_id' => 'required|exists:products,id']);
+
+        $userId = Auth::id();
+        $productId = $request->product_id;
+
+        $favorite = Favorite::where('user_id', $userId)
+                            ->where('product_id', $productId)
+                            ->first();
+
+        if ($favorite) {
+            $favorite->delete();
+            $isFavorite = false;
+            $message = 'Removed from favorites';
         } else {
-            $user->favorites()->attach($productId);
-            $status = 'added';
+            Favorite::create([
+                'user_id' => $userId,
+                'product_id' => $productId,
+            ]);
+            $isFavorite = true;
+            $message = 'Added to favorites';
         }
-    
-        return response()->json(['status' => $status]);
+
+        return response()->json([
+            'success' => true,
+            'is_favorite' => $isFavorite,
+            'message' => $message
+        ]);
+    }
+    public function index(Request $request)
+{
+    $query = Product::query();
+
+    if ($request->has('favorites_only') && Auth::check()) {
+        $user = Auth::user();
+        $query->whereHas('favoritedByUsers', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        });
     }
 
-      
-    /**
-     * Show the user's favorite products
-     */
-    public function index()
-    {
-        $user = Auth::user();
-        $favorites = $user->favorites()->with('product')->get();
-        
-        return view('profile.favorites', compact('favorites'));
-    }
+    $products = $query->get();
+
+    return view('shop.index', compact('products'));
+}
+
 }

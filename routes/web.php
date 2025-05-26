@@ -4,15 +4,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
 // Static Pages
 Route::view('/', 'welcome')->name('home');
@@ -31,19 +32,31 @@ Route::post('/register', [RegisteredUserController::class, 'register']);
 // Dashboard Redirect
 Route::get('/dashboard', function () {
     if (Auth::check()) {
-        return Auth::user()->is_admin
-            ? redirect()->route('admin.dashboard')
-            : view('dashboard');
+        if (Auth::user()->is_admin) {
+            return redirect()->route('admin.dashboard');
+        } else {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $orders = $user->orders()->latest()->take(5)->get();
+            return view('dashboard', ['orders' => $orders]);
+        }
     }
     return redirect()->route('login');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 // Profile Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    Route::get('/profile/show', [ProfileController::class, 'show'])->name('profile.show');
+
+    // Add this route for favorites
+    Route::get('/profile/favorites', [ProfileController::class, 'favorites'])->name('profile.favorites');
 });
+
 
 // Shop and Product Routes
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
@@ -62,11 +75,18 @@ Route::get('/cart/count', function () {
 
 // Cart Routes
 Route::middleware(['auth'])->group(function () {
+    Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+    
     Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+    
+    Route::patch('/cart/update/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+    
+    Route::delete('/cart/remove/{cartItem}', [CartController::class, 'remove'])->name('cart.remove');
+    
+    Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 });
+
+Route::get('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
 // Order Routes (User)
 Route::middleware(['auth'])->group(function () {
@@ -77,13 +97,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}/thank-you', [OrderController::class, 'thankYou'])->name('orders.thank-you');
     
     // Order history
-    Route::get('/my-orders', [OrderController::class, 'userOrders'])->name('orders.user');
+    Route::get('/my-orders', [OrderController::class, 'userOrders'])->name('orders.index');
     
     // Order details
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     
     // Cancel order
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
+    Route::get('/my-orders', [OrderController::class, 'userOrders'])->name('orders.index');
+
 });
 
 // Admin Routes (All in one group)
@@ -109,8 +132,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
+Route::post('/favorites/toggle/{product}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 
-Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+// Favorites Routes (only for authenticated users)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    
+    // Show user favorites
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    
+    // Remove from favorites
+    Route::delete('/favorites/remove/{product}', [FavoriteController::class, 'remove'])->name('favorites.remove');
+});
+
 
 require __DIR__.'/auth.php';

@@ -23,7 +23,6 @@
                     @endauth
                 </span>
             </a>
-                
             @if(Auth::check())
                 <div class="login-register-dropdown">
                     <a href="#" class="dropdown-toggle">
@@ -52,7 +51,6 @@
                 </div>
             @endif
         </div>
-        
         <ul id="navMenu">
             <li><a href="{{ url('/') }}">Home</a></li>
             <li><a href="{{ url('/shop') }}">Shop</a></li>
@@ -60,12 +58,10 @@
             <li><a href="{{ url('/about') }}">About</a></li>
             <li><a href="{{ url('/contact') }}">Contact</a></li>
         </ul>
-        
         <div class="logo-container">
             <span class="logo-text">غرزه</span>
             <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Logo">
         </div>
-        
         <div class="menu-toggle">
             <i class="fas fa-bars"></i>
         </div>
@@ -81,7 +77,7 @@
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
-    
+
     @if($cartItems->isEmpty())
         <div class="empty-cart">
             <p>Your cart is empty. <a href="{{ url('/shop') }}">Continue Shopping</a></p>
@@ -105,18 +101,18 @@
                             <h4>{{ $item->product->name }}</h4>
                             <p>{{ Str::limit($item->product->description, 100) }}</p>
                             <p class="price">${{ number_format($item->product->price, 2) }}</p>
-                            <form action="{{ route('cart.update') }}" method="POST" class="quantity-form">
+                            <form action="{{ route('cart.update', ['cartItem' => $item->id]) }}" method="POST" class="quantity-form">
                                 @csrf
-                                <input type="hidden" name="cart_item_id" value="{{ $item->id }}">
+                                @method('PATCH')
                                 <div class="quantity-control">
                                     <label for="quantity">Quantity:</label>
                                     <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" max="99">
                                     <button type="submit" class="update-btn">Update</button>
                                 </div>
                             </form>
-                            <form action="{{ route('cart.remove') }}" method="POST" class="remove-form">
+                            <form action="{{ route('cart.remove', ['cartItem' => $item->id]) }}" method="POST" class="remove-form">
                                 @csrf
-                                <input type="hidden" name="cart_item_id" value="{{ $item->id }}">
+                                @method('DELETE')
                                 <button type="submit" class="remove-btn">Remove</button>
                             </form>
                         </div>
@@ -146,73 +142,60 @@
 
         <!-- Checkout Form Section -->
         <div id="checkout-form" class="{{ !$checkoutMode ? 'hidden' : '' }}">
-            <div class="checkout-container">
-                <h2>Shipping Information</h2>
+            <div class="checkout-container small">
+                <h2 class="checkout-title">Checkout</h2>
                 <form action="{{ route('orders.store') }}" method="POST">
                     @csrf
-                    <div class="form-group">
-                        <label for="customer_name">Full Name</label>
-                        <input type="text" id="customer_name" name="customer_name" required value="{{ Auth::user()->name ?? '' }}">
-                    </div>
-                             
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required value="{{ Auth::user()->email ?? '' }}">
-                    </div>
-                             
-                    <div class="form-group">
-                        <label for="phone">Phone</label>
-                        <input type="tel" id="phone" name="phone" required>
-                    </div>
-                             
-                    <div class="form-group">
-                        <label for="address">Address</label>
-                        <input type="text" id="address" name="address" required>
-                    </div>
-                             
                     <div class="form-row">
+                        <div class="form-group half">
+                            <label for="customer_name">Full Name</label>
+                            <input type="text" id="customer_name" name="customer_name" required value="{{ Auth::user()->name ?? '' }}">
+                        </div>
+                        <div class="form-group half">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required value="{{ Auth::user()->email ?? '' }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
                         <div class="form-group half">
                             <label for="city">City</label>
                             <input type="text" id="city" name="city" required>
                         </div>
-                                         
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="address" required>
+                        </div>
                         <div class="form-group half">
                             <label for="postal_code">Postal Code</label>
                             <input type="text" id="postal_code" name="postal_code" required>
                         </div>
                     </div>
-                             
                     <div class="form-group">
-                        <label for="notes">Order Notes (Optional)</label>
-                        <textarea id="notes" name="notes" rows="3"></textarea>
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" rows="2" placeholder="Optional"></textarea>
                     </div>
-                             
-                    <h2>Payment Method</h2>
-                    <div class="payment-method">
-                        <div class="payment-option">
-                            <input type="radio" id="cash_on_delivery" name="payment_method" value="cash_on_delivery" checked>
-                            <label for="cash_on_delivery">Cash on Delivery</label>
-                        </div>
-                    </div>
-                             
-                    <div class="order-summary">
-                        <h3>Order Summary</h3>
+                    <div class="mini-summary">
+                        <h4>Order Summary</h4>
                         @foreach($cartItems as $item)
                             <div class="summary-item">
-                                <span class="item-name">{{ $item->product->name }} × {{ $item->quantity }}</span>
-                                <span class="item-price">${{ number_format($item->product->price * $item->quantity, 2) }}</span>
+                                <span>{{ $item->product->name }} × {{ $item->quantity }}</span>
+                                <span>${{ number_format($item->product->price * $item->quantity, 2) }}</span>
                             </div>
                         @endforeach
-                                         
                         <div class="summary-total">
                             <span>Total:</span>
                             <span>${{ number_format($total, 2) }}</span>
                         </div>
                     </div>
-                             
-                    <div class="actions">
-                        <button type="button" id="back-to-cart" class="secondary-btn">Back to Cart</button>
-                        <button type="submit" class="primary-btn">Place Order</button>
+                    <div class="actions" style="display:flex;justify-content:space-between;gap:10px;">
+                        <button type="button" id="back-to-cart" class="secondary-btn" style="flex:1;">Back</button>
+                        <button type="submit" class="primary-btn" style="flex:1;">Place Order</button>
                     </div>
                 </form>
             </div>
@@ -233,7 +216,6 @@
                 <a href="#"><i class="fab fa-pinterest-p"></i></a>
             </div>
         </div>
-        
         <div class="footer-section">
             <h4>Quick Links</h4>
             <ul>
@@ -244,7 +226,6 @@
                 <li><a href="{{ url('/contact') }}">Contact</a></li>
             </ul>
         </div>
-        
         <div class="footer-section">
             <h4>Contact</h4>
             <ul>
@@ -254,7 +235,6 @@
             </ul>
         </div>
     </div>
-    
     <div class="footer-bottom">
         <p>&copy; 2025 Tatreez Traditions. All rights reserved.</p>
     </div>
@@ -813,7 +793,6 @@
                         if (cartCountElement) {
                             cartCountElement.textContent = data.cart_count;
                         }
-                        // You can replace this with your preferred notification method
                         alert(data.message);
                     }
                 } catch (error) {
