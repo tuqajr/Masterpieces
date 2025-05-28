@@ -6,24 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 class AddCategoryIdToProductsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            // Add category_id as a foreign key
-            $table->foreignId('category_id')->nullable()->after('id')->constrained();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::table('products', function (Blueprint $table) {

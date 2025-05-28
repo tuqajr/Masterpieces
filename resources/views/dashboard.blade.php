@@ -695,33 +695,7 @@
         </div>
     </div>
 </div>
-                <!-- Workshops -->
-                <div class="profile-section">
-                    <div class="section-title">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        My Workshops
-                    </div>
-                    <div class="section-content">
-                        <div class="info-card">
-                            @if(count($workshops ?? []) > 0)
-                                @foreach($workshops as $workshop)
-                                <div class="workshop-item">
-                                    <h4>{{ $workshop->title }}</h4>
-                                    <p><strong>Date:</strong> {{ $workshop->date->format('d M, Y') }}</p>
-                                    <p><strong>Time:</strong> {{ $workshop->start_time }} - {{ $workshop->end_time }}</p>
-                                    <a href="{{ route('workshops.show', $workshop->id) }}" class="view-button">View Details</a>
-                                </div>
-                                @endforeach
-                            @else
-                                <p class="empty-state">You are not enrolled in any workshops.</p>
-                                <a href="{{ url('/learn') }}" class="workshop-button">
-                                    <i class="fas fa-book"></i> Explore Workshops
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
+              
 
             <div class="profile-actions">
                 <a href="{{ route('logout') }}" class="logout-button" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

@@ -10,29 +10,24 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'orderItems'])->latest();
-
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filter by payment status
-        if ($request->filled('payment_status')) {
-            $query->where('payment_status', $request->payment_status);
-        }
-
-        // Search by order number or customer
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('customer_email', 'like', "%{$search}%");
-            });
-        }
-
-        $orders = $query->paginate(15);
+        $orders = Order::with(['user', 'orderItems'])
+            ->when($request->status, function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+            ->when($request->payment_status, function ($query) use ($request) {
+                $query->where('payment_status', $request->payment_status);
+            })
+            ->when($request->search, function ($query) use ($request) {
+                $query->where(function($q) use ($request) {
+                    $q->where('order_number', 'like', "%{$request->search}%")
+                      ->orWhereHas('user', function($qq) use ($request) {
+                          $qq->where('name', 'like', "%{$request->search}%")
+                             ->orWhere('phone', 'like', "%{$request->search}%");
+                      });
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         return view('admin.orders.index', compact('orders'));
     }
@@ -44,19 +39,28 @@ class OrderController extends Controller
     }
 
     public function updateStatus(Request $request, Order $order)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,confirmed,preparing,out_for_delivery,delivered,cancelled'
-        ]);
+{
+    $request->validate([
+        'status' => 'required|in:pending,confirmed,preparing,out_for_delivery,delivered,cancelled'
+    ]);
 
-        $order->update([
-            'status' => $request->status,
-            'delivered_at' => $request->status === 'delivered' ? now() : null
-        ]);
+    $order->status = $request->status;
+    if ($request->status === 'delivered') {
+        $order->delivered_at = now();
+    } else {
+        $order->delivered_at = null;
+    }
+    $order->save();
 
+    // AJAX
+    if ($request->ajax() || $request->wantsJson()) {
         return response()->json([
             'success' => true,
-            'message' => 'Order status updated successfully'
+            'message' => 'Order status updated successfully',
+            'status'  => $order->status
         ]);
     }
+
+    return back()->with('success', 'Order status updated!');
+}
 }

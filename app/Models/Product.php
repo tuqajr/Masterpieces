@@ -7,10 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
     
     public function orderItems()
     {
@@ -43,6 +39,16 @@ public function isFavoritedBy($user)
 public function images()
 {
     return $this->hasMany(\App\Models\ProductImage::class);
+}
+
+public function category()
+{
+    return $this->belongsTo(Category::class);
+}
+
+public function extraImages()
+{
+    return $this->hasMany(ProductImage::class);
 }
 
 }

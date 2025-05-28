@@ -6,7 +6,7 @@
 <div class="container orders-container">
     <div class="page-header">
         <h1>My Orders</h1>
-        <p class="subtitle">View and track all your orders</p>
+        <p class="subtitle">View all your orders</p>
     </div>
 
     @if(session('success'))
@@ -67,11 +67,7 @@
 
                 <div class="order-actions">
                     <a href="{{ route('orders.show', $order->id) }}" class="btn btn-outline">View Details</a>
-                    @if($order->status === 'pending' || $order->status === 'confirmed')
-                        <button class="btn btn-secondary" onclick="trackOrder('{{ $order->order_number }}')">
-                            Track Order
-                        </button>
-                    @endif
+                 
                     @if($order->status === 'delivered')
                         <a href="{{ route('orders.reorder', $order->id) }}" class="btn btn-primary">Reorder</a>
                     @endif

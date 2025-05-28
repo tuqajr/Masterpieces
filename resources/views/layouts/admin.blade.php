@@ -241,7 +241,7 @@
                             <ul class="submenu">
                                 <li><a class="nav-link" href="{{ route('admin.products.index') }}">All Products</a></li>
                                 <li><a class="nav-link" href="{{ route('admin.products.create') }}">Add New Product</a></li>
-                                <li><a class="nav-link" href="">Categories</a></li>
+                                <li><a class="nav-link" href="{{ route('admin.categories.index') }}">Categories</a></li>
                             </ul>
                         </li>
                         
@@ -253,8 +253,6 @@
                             </a>
                             <ul class="submenu">
                                 <li><a class="nav-link" href="{{ route('admin.orders.index') }}">All Orders</a></li>
-                                <li><a class="nav-link" href="">Pending Orders</a></li>
-                                <li><a class="nav-link" href="">Completed Orders</a></li>
                             </ul>
                         </li>
                         

@@ -164,12 +164,7 @@
 
     <!-- Order Actions -->
     <div class="order-actions">
-        @if($order->status === 'pending' || $order->status === 'confirmed')
-            <button class="btn btn-secondary" onclick="trackOrder('{{ $order->order_number }}')">
-                <i class="fas fa-truck"></i> Track Order
-            </button>
-        @endif
-        
+       
         @if($order->status === 'delivered')
             <a href="{{ route('orders.reorder', $order->id) }}" class="btn btn-primary">
                 <i class="fas fa-redo"></i> Reorder

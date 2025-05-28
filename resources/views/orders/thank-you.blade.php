@@ -9,7 +9,6 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
-{{-- تحقق أن المتغير $order معرف --}}
 @if(isset($order))
 <div class="container thank-you-container">
     <div class="thank-you-card">

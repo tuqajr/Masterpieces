@@ -51,7 +51,7 @@
                     @if(Auth::user()->is_admin)
                         <a href="{{ route('admin.dashboard') }}">Dashboard</a>
                     @else
-                        <a href="{{ route('dashboard') }}">Dashboard</a>
+                        <a href="{{ route('dashboard') }}">Profile</a>
                     @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

@@ -24,6 +24,19 @@ class ProductController extends Controller
         return view('admin.products.create', compact('categories'));
     }
 
+
+    public function updateCategory(Request $request, Product $product)
+{
+    $validated = $request->validate([
+        'category_id' => 'nullable|exists:categories,id',
+    ]);
+
+    $product->category_id = $validated['category_id'];
+    $product->save();
+
+    return redirect()->route('admin.categories.index')->with('success', 'Category updated for product!');
+}
+
     public function store(Request $request)
 {
     $validated = $request->validate([
@@ -46,10 +59,8 @@ class ProductController extends Controller
     }
     $product->save();
 
-    // التعامل مع الصور الإضافية بشكل صحيح
     if ($request->hasFile('extra_images')) {
         foreach ($request->file('extra_images') as $image) {
-            // أضف هذا الشرط للتأكد من أن الصورة حقيقية وصحيحة
             if ($image && $image->isValid()) {
                 $path = $image->store('products/extra', 'public');
                 $product->images()->create(['image' => $path]);

@@ -6,20 +6,22 @@
         <h1>Products</h1>
         <a href="{{ route('admin.products.create') }}" class="btn-add">Add New Product</a>
     </div>
-    
     @if(session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
-    
+
     <div class="product-list">
         <table class="products-table">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Image</th>
+                    <th>Main Image</th>
+                    <th>Extra Images</th>
                     <th>Name</th>
+                    <th>Category</th>
+                    <th>Stock</th>
                     <th>Price</th>
                     <th>Actions</th>
                 </tr>
@@ -28,17 +30,17 @@
                 @forelse($products as $product)
                     <tr>
                         <td>{{ $product->id }}</td>
-                       <td>
-                    @if (Str::startsWith($product->image, 'http'))
-                        <img class="product-image" src="{{ $product->image }}" alt="{{ $product->name }}">
-                    @else
-                        @php
-                            $imagePath = $product->image ? 'storage/products/' . basename($product->image) : 'images/placeholder.png';
-                        @endphp
-                        <img class="product-image" src="{{ asset($imagePath) }}" alt="{{ $product->name }}">
-                    @endif
-                </td>
+                        <td>
+                            <img class="product-image" src="{{ asset($product->image ? 'storage/products/' . basename($product->image) : 'images/placeholder.png') }}" alt="{{ $product->name }}">
+                        </td>
+                        <td>
+                            @foreach($product->extraImages as $img)
+                            <img class="product-image" src="{{ asset('storage/products/extra/' . basename($img->image)) }}" alt="Extra">
+                        @endforeach
+                        </td>
                         <td>{{ $product->name }}</td>
+                        <td>{{ $product->category?->name ?? '-' }}</td>
+                        <td>{{ $product->stock ?? 0 }}</td>
                         <td>${{ number_format($product->price, 2) }}</td>
                         <td class="actions">
                             <a href="{{ route('admin.products.edit', $product->id) }}" class="btn-edit">Edit</a>
@@ -51,7 +53,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="no-products">No products found.</td>
+                        <td colspan="8" class="no-products">No products found.</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -10,16 +10,18 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('order_number')->nullable()->after('id');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->decimal('total', 10, 2);
-            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled'])->default('pending');
-            $table->datetime('delivery_date');
-            $table->text('shipping_address');
-            $table->string('phone', 20);
-            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
-            $table->enum('payment_method', ['credit_card', 'paypal', 'cash_on_delivery'])->default('cash_on_delivery');
-            $table->datetime('delivery_date')->nullable()->after('status');
-
+            $table->string('customer_name');
+            $table->string('customer_email');
+            $table->string('customer_phone')->nullable();
+            $table->string('delivery_address');
+            $table->text('delivery_instructions')->nullable();
+            $table->string('payment_method')->nullable();
+            $table->string('payment_status')->default('pending');
+            $table->decimal('total_amount', 10, 2);
+            $table->string('status')->default('pending');
+            $table->timestamp('delivered_at')->nullable();
             $table->timestamps();
         });
     }

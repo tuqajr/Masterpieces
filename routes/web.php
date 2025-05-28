@@ -11,6 +11,7 @@ use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -120,12 +121,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Products
     Route::resource('products', AdminProductController::class);
+
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+    
     
     // Orders
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
-    
+Route::patch('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
+Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
+    Route::resource('orders', OrderController::class);
+});   
     // Users
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/all_users', [UserController::class, 'index'])->name('all_user_dashboard'); // Your custom route
@@ -161,4 +167,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::delete('/admin/products/images/{id}', [AdminProductController::class, 'destroyImage'])->name('admin.products.images.destroy');
 Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+
+
+Route::patch('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
+
+    Route::patch('/admin/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus']);
+Route::delete('/admin/orders/{order}', [OrderController::class, 'destroy']);
+
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
+  
+
+});
+
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+    Route::resource('categories', CategoryController::class);
+    Route::resource('products', ProductController::class);
+    Route::patch('products/{product}/update-category', [ProductController::class, 'updateCategory'])
+        ->name('admin.products.updateCategory');
+});
+
+
 require __DIR__.'/auth.php';
