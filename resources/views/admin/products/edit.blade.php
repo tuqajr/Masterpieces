@@ -51,6 +51,28 @@
                 <button type="submit" class="btn-save">Update Product</button>
                 <a href="{{ route('admin.products.index') }}" class="btn-cancel">Cancel</a>
             </div>
+            <div class="form-group">
+            <label for="extra_images">Extra Images</label>
+            <input type="file" id="extra_images" name="extra_images[]" accept="image/*" multiple>
+            <small>You can select multiple images</small>
+        </div>
+            @if($product->images->count())
+    <div class="image-preview-container mt-3">
+        <label>Current Extra Images:</label>
+        <div style="display: flex; gap: 10px;">
+            @foreach($product->images as $img)
+                <div style="position:relative;">
+                    <img src="{{ asset('storage/' . $img->image) }}" alt="Extra Image" width="80" style="border-radius:5px;">
+                    <form action="{{ route('admin.products.images.destroy', $img->id) }}" method="POST" style="position:absolute;top:0;right:0;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm" style="padding:2px 6px;">&times;</button>
+                    </form>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
         </form>
     </div>
 </div>

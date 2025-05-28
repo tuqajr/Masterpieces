@@ -27,8 +27,104 @@
                 <p class="stat-number">{{ $activeProductsCount }}</p>
             </div>
         </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Total Orders</h3>
+                <p class="stat-number">{{ $ordersCount }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Total Customers</h3>
+                <p class="stat-number">{{ $customersCount }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-section" style="margin-top: 40px;">
+        <h2 style="margin-bottom: 25px; color: rgb(145, 51, 51);">Order Statistics</h2>
+        <canvas id="ordersChart" height="80"></canvas>
+    </div>
+    
+    <div class="recent-orders-section" style="margin-top:40px;">
+        <h2 style="margin-bottom: 25px; color: rgb(145, 51, 51);">Recent Orders</h2>
+        <table class="recent-orders-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($recentOrders as $order)
+                <tr>
+                    <td>{{ $order->id }}</td>
+                    <td>{{ $order->customer->name ?? 'N/A' }}</td>
+                    <td>{{ number_format($order->total, 2) }} {{ $currency ?? '$' }}</td>
+                    <td>
+                        <span class="status-badge status-{{ strtolower($order->status) }}">
+                            {{ ucfirst($order->status) }}
+                        </span>
+                    </td>
+                    <td>{{ $order->created_at->format('Y-m-d') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 </div>
+
+<!-- Chart.js CDN (or use local if preferred) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@php
+    $chartLabels = isset($ordersChartLabels) ? $ordersChartLabels : [];
+    $chartData = isset($ordersChartData) ? $ordersChartData : [];
+@endphp
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById("ordersChart").getContext("2d");
+
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: "Orders",
+                        data: chartData,
+                        borderColor: "rgb(145, 51, 51)",
+                        backgroundColor: "rgba(145, 51, 51, 0.15)",
+                        tension: 0.3,
+                        pointRadius: 5,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    });
+</script>
+
 
 <style>
     /* Dashboard Styles */
@@ -107,24 +203,62 @@
         font-weight: bold;
     }
 
-    .sidebar-logo {
-        text-align: center;
-        padding: 20px 0;
-        margin-bottom: 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    .charts-section {
+        background: #fff;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-bottom: 40px;
     }
 
-    .sidebar-logo .logo-text {
-        font-family: 'Reem Kufi', sans-serif;
-        color: #d4af37;
-        font-size: 2rem;
-        display: block;
-        margin-bottom: 10px;
+    .recent-orders-section {
+        background: #fff;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
-    .sidebar-logo img {
-        width: 60px;
-        height: auto;
+    .recent-orders-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 1rem;
+    }
+
+    .recent-orders-table th, .recent-orders-table td {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 10px 12px;
+        text-align: left;
+    }
+
+    .recent-orders-table th {
+        background: #FAF3ED;
+        color: rgb(145, 51, 51);
+        font-weight: bold;
+    }
+
+    .recent-orders-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        color: #fff;
+        font-size: 0.92em;
+        font-weight: 600;
+    }
+    .status-pending {
+        background: #e0a800;
+    }
+    .status-completed {
+        background: #28a745;
+    }
+    .status-cancelled {
+        background: #dc3545;
+    }
+    .status-processing {
+        background: #17a2b8;
     }
 
     /* Responsive Adjustments */
@@ -132,9 +266,11 @@
         .stats-container {
             flex-direction: column;
         }
-        
         .stat-card {
             width: 100%;
+        }
+        .charts-section, .recent-orders-section {
+            padding: 10px;
         }
     }
 </style>

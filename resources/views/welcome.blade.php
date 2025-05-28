@@ -302,42 +302,71 @@
             </div>
         </section>
         
-        <!-- Testimonials Section -->
-        <section class="testimonials">
-            <div class="container">
-                <h2 class="section-title">What Our Customers Say</h2>
-                <p class="section-subtitle">Hear from our community of Tatreez enthusiasts and collectors.</p>
-                
-                <div class="testimonial-slider">
-                    <div class="testimonial">
-                        <div class="testimonial-text">
-                            The quality of the embroidery is exceptional! I purchased a wall hanging as a gift, and the recipient was amazed by the intricate details and vibrant colors. The piece tells a beautiful cultural story and has become the centerpiece of their living room.
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-image">
-                                <img src="{{ asset('images/girl.jpeg') }}" alt="Sarah M.">
-                            </div>
-                            <div class="author-info">
-                                <h4>Sarah M.</h4>
-                                <p>Collector & Workshop Participant</p>
-                            </div>
+        
+       <!-- Testimonials Section -->
+<section class="testimonials">
+    <div class="container">
+        <h2 class="section-title">Share Your Experience</h2>
+        <p class="section-subtitle">We value your feedback! Write your testimonial below:</p>
+        
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+        
+        @auth
+        <form action="{{ route('testimonial.store') }}" method="POST" class="testimonial-form">
+            @csrf
+            <textarea name="testimonial" rows="4" placeholder="Write your feedback here..." required></textarea>
+            <button type="submit" class="btn btn-primary">Submit Testimonial</button>
+        </form>
+        @else
+        <p class="empty-state">Please <a href="{{ route('login') }}">login</a> to leave a testimonial.</p>
+        @endauth
+        
+        <h3>What others say:</h3>
+        
+        @if($testimonials->count() > 0)
+        <div class="testimonial-slider">
+            <div class="testimonial-slider-track">
+                @foreach($testimonials as $testimonial)
+                <div class="testimonial">
+                    <div class="testimonial-text">
+                        "{{ $testimonial->text }}"
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-info">
+                            <h4>{{ $testimonial->user->name }}</h4>
+                            <p>{{ $testimonial->created_at->format('d M Y') }}</p>
                         </div>
                     </div>
                 </div>
+                @endforeach
+                
+                <!-- Duplicate testimonials for seamless loop -->
+                @foreach($testimonials as $testimonial)
+                <div class="testimonial">
+                    <div class="testimonial-text">
+                        "{{ $testimonial->text }}"
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-info">
+                            <h4>{{ $testimonial->user->name }}</h4>
+                            <p>{{ $testimonial->created_at->format('d M Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
             </div>
-        </section>
-        
-        <!-- Newsletter Section -->
-        <section class="newsletter">
-            <div class="container">
-                <h2>Stay Connected</h2>
-                <p>Subscribe to our newsletter to receive updates on new collections, workshops, and special offers.</p>
-                <form class="newsletter-form">
-                    <input type="email" placeholder="Your email address">
-                    <button type="submit">Subscribe</button>
-                </form>
+        </div>
+        @else
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <div class="testimonial-text">No testimonials yet. Be the first to share your experience!</div>
             </div>
-        </section>
+        </div>
+        @endif
+    </div>
+</section>
     </main>
     
     <footer>

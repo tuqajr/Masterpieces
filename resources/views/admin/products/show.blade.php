@@ -22,6 +22,16 @@
             @else
                 <p><strong>Image:</strong> No image available</p>
             @endif
+            @if($product->images->count())
+    <div class="mt-3">
+        <strong>Extra Images:</strong>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            @foreach($product->images as $img)
+                <img src="{{ asset('storage/' . $img->image) }}" alt="Extra Image" width="80" style="border-radius:5px;">
+            @endforeach
+        </div>
+    </div>
+@endif
         </div>
     </div>
     

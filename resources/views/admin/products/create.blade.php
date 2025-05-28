@@ -25,11 +25,6 @@
         <label for="name">Product Name</label>
         <input type="text" name="name" class="form-control" required>
     </div>
-            <!-- 
-            <div class="form-group">
-                <label for="name">Product Name</label>
-                <input type="text" id="name" name="name" value="{{ old('name') }}" required>
-            </div> -->
             
             <div class="form-group">
                 <label for="description">Description</label>
@@ -56,6 +51,11 @@
             <span class="preview-text">Image Preview</span>
         </div>
     </div>
+</div>
+<div class="form-group">
+    <label for="extra_images">Extra Images</label>
+    <input type="file" id="extra_images" name="extra_images[]" accept="image/*" multiple>
+    <small>You can select multiple images</small>
 </div>
 
             </div>

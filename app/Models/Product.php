@@ -40,4 +40,9 @@ public function isFavoritedBy($user)
     return $this->favoritedByUsers()->where('user_id', $user->id)->exists();
 }
 
+public function images()
+{
+    return $this->hasMany(\App\Models\ProductImage::class);
+}
+
 }

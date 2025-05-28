@@ -7,16 +7,20 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
+
 
 // Static Pages
-Route::view('/', 'welcome')->name('home');
+Route::get('/', [WelcomeController::class, 'index'])->name('home');
 Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/learn', 'learn')->name('learn');
@@ -145,5 +149,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/favorites/remove/{product}', [FavoriteController::class, 'remove'])->name('favorites.remove');
 });
 
+Route::post('/testimonial', [TestimonialController::class, 'store'])->name('testimonial.store');
 
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/testimonials/pending', [AdminTestimonialController::class, 'pending'])->name('testimonials.pending');
+    Route::post('/testimonials/{id}/approve', [AdminTestimonialController::class, 'approve'])->name('testimonials.approve');
+    Route::post('/testimonials/{id}/reject', [AdminTestimonialController::class, 'reject'])->name('testimonials.reject');
+});
+
+Route::delete('/admin/products/images/{id}', [AdminProductController::class, 'destroyImage'])->name('admin.products.images.destroy');
+Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 require __DIR__.'/auth.php';

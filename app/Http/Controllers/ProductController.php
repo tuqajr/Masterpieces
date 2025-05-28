@@ -9,81 +9,65 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the products.
-     */
     public function index()
     {
         $products = Product::orderBy('created_at', 'desc')->paginate(10);
         return view('admin.products.index', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new product.
-     */
     public function create()
     {
         $categories = Category::all();
         return view('admin.products.create', compact('categories'));
     }
 
-    /**
-     * Store a newly created product in storage.
-     */
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'required|string',
-        'price' => 'required|numeric|min:0',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'extra_images' => 'nullable|array',
+            'extra_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
 
-    $productData = [
-        'name' => $validated['name'],
-        'description' => $validated['description'],
-        'price' => $validated['price'],
-        'image' => null,
-    ];
+        $product = new Product();
+        $product->name = $validated['name'];
+        $product->description = $validated['description'];
+        $product->price = $validated['price'];
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+            $product->image = $imagePath;
+        }
+        $product->save();
 
-    if ($request->hasFile('image')) {
-        $imagePath = $request->file('image')->store('products', 'public');
-        $productData['image'] = $imagePath;
+        if ($request->hasFile('extra_images')) {
+            foreach ($request->file('extra_images') as $image) {
+                if ($image && $image->isValid()) {
+                    $path = $image->store('products/extra', 'public');
+                    $product->images()->create(['image' => $path]);
+                }
+            }
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Product created successfully!');
     }
 
-    Product::create($productData);
-
-    return redirect()->route('admin.products.index')->with('success', 'Product created successfully!');
-}
-
-
-
-protected $fillable = [
-    'name',
-    'description',
-    'price',
-    'image',
-];
-
-     public function show($id)
+    public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('images')->findOrFail($id);
         return view('products.show', compact('product'));
     }
 
-    /**
-     * Show the form for editing the specified product.
-     */
-    public function edit(Product $product)
+    public function edit($id)
     {
+        $product = Product::with('images')->findOrFail($id);
         $categories = Category::all();
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    /**
-     * Update the specified product in storage.
-     */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'name' => 'required|max:255',
@@ -91,11 +75,13 @@ protected $fillable = [
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'category_id' => 'nullable|exists:categories,id',
+            'extra_images' => 'nullable|array',
+            'extra_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-        // Handle image upload
+        $product = Product::with('images')->findOrFail($id);
+
         if ($request->hasFile('image')) {
-            // Delete old image
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
@@ -105,25 +91,31 @@ protected $fillable = [
 
         $product->update($validated);
 
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product updated successfully.');
+        // Save new extra images
+        if ($request->hasFile('extra_images')) {
+            foreach ($request->file('extra_images') as $image) {
+                if ($image && $image->isValid()) {
+                    $path = $image->store('products/extra', 'public');
+                    $product->images()->create(['image' => $path]);
+                }
+            }
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
     }
 
-    /**
-     * Remove the specified product from storage.
-     */
-    public function destroy(Product $product)
+    public function destroy($id)
     {
-        // Delete the product image
+        $product = Product::with('images')->findOrFail($id);
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
-
+        foreach ($product->images as $img) {
+            Storage::disk('public')->delete($img->image);
+            $img->delete();
+        }
         $product->delete();
 
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product deleted successfully.');
+        return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }
 }

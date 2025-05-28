@@ -173,8 +173,8 @@
 
             <div class="product-grid">
                 @foreach ($products as $product)
-<div class="product-card animate__animated animate__fadeInUp" 
-     style="--delay: {{ $loop->index * 0.1 }}; animation-delay: calc(var(--delay) * 1s);">                   <!-- HEART FAVORITE ICON -->
+                <div class="product-card animate__animated animate__fadeInUp" 
+                 style="--delay: {{ $loop->index * 0.1 }}; animation-delay: calc(var(--delay) * 1s);">                   <!-- HEART FAVORITE ICON -->
                     @if(Auth::check())
                         <div class="favorite-heart" data-product-id="{{ $product->id }}">
                             <i class="{{ auth()->user() && $product->isFavoritedBy(auth()->user()) ? 'fas fa-heart filled' : 'far fa-heart empty' }}"></i>

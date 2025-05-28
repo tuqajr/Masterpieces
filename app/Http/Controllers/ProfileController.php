@@ -9,12 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use App\Models\Order;
+use App\Models\Favorite;
+use App\Models\Product;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -23,56 +22,31 @@ class ProfileController extends Controller
     }
 
     /**
-     * Display the dashboard with recent orders.
+     * عرض الداشبورد مع الطلبات والمفضلات
      */
     public function dashboard()
     {
-        $orders = Order::where('user_id', Auth::id())
-                       ->orderBy('created_at', 'desc')
-                       ->limit(5) // Show only recent 5 orders
-                       ->get();
-        
-        return view('dashboard', compact('orders'));
+        $user = Auth::user();
+        $orders = Order::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        $favoriteProductIds = Favorite::where('user_id', $user->id)->pluck('product_id');
+        $favorites = Product::whereIn('id', $favoriteProductIds)->get();
+
+        return view('dashboard', compact('orders', 'favorites'));
     }
 
-    /**
-     * Display the user's profile with orders.
-     */
-    public function index(Request $request)
-{
-    $user = $request->user();
-
-    $orders = Order::where('user_id', $user->id)
-                   ->orderBy('created_at', 'desc')
-                   ->limit(5)
-                   ->get();
-
-    // Load favorites with product relation
-    $favorites = $user->favorites()->with('product')->get();
-
-    return view('profile.index', [
-        'user' => $user,
-        'orders' => $orders,
-        'favorites' => $favorites,
-    ]);
-}
-
-
-    /**
-     * Display paginated orders for the user.
-     */
     public function orders()
     {
         $orders = Order::where('user_id', Auth::id())
                        ->orderBy('created_at', 'desc')
                        ->paginate(10);
-        
+
         return view('profile.orders', compact('orders'));
     }
 
-    /**
-     * Update the user's profile information.
-     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -86,9 +60,6 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -107,15 +78,13 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 
-    /**
-     * Show user profile with all orders.
-     */
-    public function show(Request $request)
+    public function show()
     {
-        $user = $request->user();
-        $orders = $user->orders()->latest()->get();
+        $user = Auth::user();
+        $orders = Order::where('user_id', $user->id)
+                       ->orderBy('created_at', 'desc')
+                       ->get();
 
         return view('profile.show', compact('user', 'orders'));
     }
-    
 }

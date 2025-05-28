@@ -16,13 +16,39 @@ class DashboardController extends Controller
         $this->middleware('admin'); 
     }
 
-    
     public function index()
     {
-        $productsCount = \App\Models\Product::count();
-        $activeProductsCount = \App\Models\Product::where('status', 'active')->count();
+        $productsCount = Product::count();
+        $activeProductsCount = Product::where('status', 'active')->count();
+        $ordersCount = Order::count();
+        $customersCount = User::where('role', 'customer')->count();
 
-        return view('admin.dashboard', compact('productsCount', 'activeProductsCount'));
+        $recentOrders = Order::with('customer')->orderBy('created_at', 'desc')->take(10)->get();
+
+        $ordersChartLabels = [];
+        $ordersChartData = [];
+        foreach (
+            Order::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as total')
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->take(6)
+                ->get() as $stat
+        ) {
+            $ordersChartLabels[] = $stat->month;
+            $ordersChartData[] = $stat->total;
+        }
+
+        $currency = '$';
+
+        return view('admin.dashboard', compact(
+            'productsCount',
+            'activeProductsCount',
+            'ordersCount',
+            'customersCount',
+            'recentOrders',
+            'ordersChartLabels',
+            'ordersChartData',
+            'currency'
+        ));
     }
-    
 }

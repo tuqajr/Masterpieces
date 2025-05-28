@@ -269,8 +269,12 @@
                                 <li><a class="nav-link" href="{{ route('admin.users.create') }}">Add New User</a></li>
                             </ul>
                         </li>
-                        
-                        <li class="nav-item mt-4">
+                        <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.testimonials.pending') ? 'active' : '' }}" href="{{ route('admin.testimonials.pending') }}">
+                            <i class="fas fa-comments menu-icon"></i> Pending Testimonials
+                        </a>
+                    </li>
+                            <li class="nav-item mt-4">
                             <a class="nav-link" href="{{ route('home') }}">
                                 <i class="fas fa-home menu-icon"></i> Back to Site
                             </a>

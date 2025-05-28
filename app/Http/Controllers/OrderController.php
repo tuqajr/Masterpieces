@@ -109,4 +109,21 @@ public function show(Order $order)
 
     return view('orders.show', compact('order'));
 }
+
+public function cancel(Order $order)
+{
+    // Optional: Confirm user owns the order
+    if (Auth::id() !== $order->user_id) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+
+    if ($order->status !== 'pending') {
+        return response()->json(['success' => false, 'message' => 'Only pending orders can be cancelled.'], 400);
+    }
+
+    $order->status = 'cancelled';
+    $order->save();
+
+    return response()->json(['success' => true, 'message' => 'Order cancelled successfully!']);
+}
 }

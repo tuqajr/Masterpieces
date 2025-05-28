@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>User Profile | Ghorzah</title>
 
     <!-- Fonts -->
@@ -641,11 +642,11 @@
                 </p>
                 <p><strong>Total:</strong> ${{ number_format($order->total, 2) }}</p>
                 <a href="{{ route('orders.show', $order->id) }}" class="view-button">View Details</a>
-                @if($order->status === 'pending')
-                    <button class="cancel-button" onclick="cancelOrder('{{ $order->id }}')">
-                        Cancel Order
-                    </button>
-                @endif
+               @if($order->status === 'pending')
+                <button class="cancel-button" onclick="cancelOrder('{{ $order->id }}')">
+                    Cancel Order
+                </button>
+            @endif
             </div>
             @endforeach
         @else
@@ -655,49 +656,45 @@
 </div>
 
                     <!-- Saved Items -->
-        <div class="profile-section">
-            <div class="section-title">
-                <i class="fas fa-heart"></i>
-                Saved Items
-            </div>
-            <div class="section-content">
-                <div class="info-card">
-                    
-                   @if(count($favorites ?? []) > 0)
-                        <div class="saved-items-grid">
-                            @foreach($favorites as $favorite)
-                            <div class="saved-item">
-                            <img src="{{ $favorite->product->image ? asset($favorite->product->image) : asset('images/default.png') }}" alt="{{ $favorite->product->name }}">
-                                <h4>{{ $favorite->product->name }}</h4>
-                                <p>${{ number_format($favorite->product->price, 2) }}</p>
-                                <div class="saved-item-actions">
-                                    <a href="{{ route('product.show', $favorite->product->id) }}" class="view-button">View</a>
-                                    <form action="{{ route('cart.add', $favorite->product->id) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="add-to-cart-button">Add to Cart</button>
-                                    </form>
-                                    <form action="{{ route('favorites.toggle', $favorite->product->id) }}" method="POST" class="remove-favorite-form">
-                                        @csrf
-                                        <button type="submit" class="remove-button">
-                                            <i class="fas fa-trash-alt"></i> Remove
-                                        </button>
-                                    </form>
-                                </div>
+                           <div class="profile-section">
+    <div class="section-title">
+        <i class="fas fa-heart"></i>
+        Saved Items
+    </div>
+    <div class="section-content">
+        <div class="info-card">
+            @if(count($favorites ?? []) > 0)
+                <div class="saved-items-grid">
+                    @foreach($favorites as $product)
+                        <div class="saved-item">
+                            <img src="{{ $product->image ? asset($product->image) : asset('images/default.png') }}" alt="{{ $product->name }}">
+                            <h4>{{ $product->name }}</h4>
+                            <p>${{ number_format($product->price, 2) }}</p>
+                            <div class="saved-item-actions">
+                                <a href="{{ route('product.show', $product->id) }}" class="view-button">View</a>
+                                <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="add-to-cart-button">Add to Cart</button>
+                                </form>
+                                <form action="{{ route('favorites.toggle', $product->id) }}" method="POST" class="remove-favorite-form">
+                                    @csrf
+                                    <button type="submit" class="remove-button">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </form>
                             </div>
-                            @endforeach
                         </div>
-                    @else
-                        <p class="empty-state">You have no saved items.</p>
-                        <a href="{{ url('/shop') }}" class="shop-button">
-                            <i class="fas fa-store"></i> Browse Products
-                        </a>
-                    @endif
-
+                    @endforeach
                 </div>
-            </div>
+            @else
+                <p class="empty-state">You have no saved items.</p>
+                <a href="{{ url('/shop') }}" class="shop-button">
+                    <i class="fas fa-store"></i> Browse Products
+                </a>
+            @endif
         </div>
-
-
+    </div>
+</div>
                 <!-- Workshops -->
                 <div class="profile-section">
                     <div class="section-title">
@@ -780,6 +777,32 @@
     <button id="topBtn" title="Go to top"><i class="fas fa-arrow-up"></i></button>
 
     <script>
+
+        function cancelOrder(orderId) {
+    if (confirm('Are you sure you want to cancel this order?')) {
+        fetch(`/orders/${orderId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Order cancelled successfully.');
+                location.reload();
+            } else {
+                alert('Failed to cancel order: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('An error occurred while trying to cancel the order.');
+            console.error('Error:', error);
+        });
+    }
+}
         // Back to top button
         const topButton = document.getElementById("topBtn");
         
@@ -853,29 +876,7 @@
         });
     </script>
     @push('scripts')
-<script>
-function cancelOrder(orderId) {
-    if (confirm('Are you sure you want to cancel this order?')) {
-        fetch(`/orders/${orderId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-}
-</script>
+
 @endpush
         <script src="js/navbar-footer.js"></script>
 

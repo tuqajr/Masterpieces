@@ -6,23 +6,14 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\CartItem;
 use App\Models\Traits\HasCartItems;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-
-
-
-/**
- * @property \Illuminate\Database\Eloquent\Collection|\App\Models\CartItem[] $cartItems
- */
-
 class User extends Authenticatable
-{    
-
-
+{
     use HasFactory, Notifiable, HasCartItems;
 
     protected $fillable = [
@@ -44,69 +35,51 @@ class User extends Authenticatable
         ];
     }
 
-    public function orders()
+    /**
+     * Get all orders for the user.
+     */
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
-    
+    /**
+     * Check if user is admin.
+     */
     public function isAdmin()
     {
         return $this->role === 'admin';
     }
 
+    /**
+     * Check if user is regular user.
+     */
     public function isUser()
     {
         return $this->role === 'user';
     }
 
-    public function cartItems()
+    /**
+     * Get cart items for the user.
+     */
+    public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
     }
 
-   
-public function favorites()
-{
-    return $this->belongsToMany(Product::class, 'favorites', 'user_id', 'product_id')->withTimestamps();
-
-        return $this->belongsToMany(Product::class, 'favorites');
-
-}
-
-    
-     /**
-     * Get the products that the user has favorited.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    /**
+     * The products that the user has favorited.
      */
-    /* public function favorites()
+    public function favorites(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'favorites');
+        return $this->belongsToMany(Product::class, 'favorites', 'user_id', 'product_id')->withTimestamps();
     }
- */
+
     /**
      * Get the products in the user's cart.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function cart()
+    public function cart(): HasMany
     {
         return $this->hasMany(CartItem::class);
     }
-
-
-    public function userOrders()
-{
-    /** @var User $user */
-    $user = Auth::user();
-
-    $orders = $user->orders()
-        ->with('orderItems')
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
-
-    return view('orders.user-orders', compact('orders'));
 }
-}
-
