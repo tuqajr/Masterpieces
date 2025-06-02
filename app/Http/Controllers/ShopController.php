@@ -23,7 +23,7 @@ class ShopController extends Controller
         // Paginate products
         $products = $query->paginate(12);
 
-        // Get categories for filter dropdown
+        // Get categories for filter dropdown from the database (array of names)
         $categories = $this->getCategories();
 
         // Get cart items for current user
@@ -78,9 +78,11 @@ class ShopController extends Controller
      */
     private function applyFilters($query, Request $request)
     {
-        // Filter by category
+        // Filter by category name
         if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('name', $request->category);
+            });
         }
 
         // Filter by max price
@@ -118,21 +120,13 @@ class ShopController extends Controller
     }
 
     /**
-     * Get categories for the filter dropdown.
+     * Get categories for the filter dropdown from the database.
+     * Returns an array of category names (strings).
      */
     private function getCategories()
     {
-        // Option 1: Hardcoded categories
-        return [
-            'mug' => 'Mugs',
-            'bag' => 'Bags',
-            'hoodie' => 'Hoodies',
-            'art' => 'Wall Art',
-            'learn' => 'Workshop',
-        ];
-
-        // Option 2: Fetch from database
-        // return Category::pluck('name', 'slug');
+        // Fetch all unique category names from the database (ordered by name)
+        return \App\Models\Category::orderBy('name')->pluck('name')->toArray();
     }
 
     /**

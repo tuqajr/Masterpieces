@@ -66,18 +66,20 @@ header.scrolled {
     display: flex;
     align-items: center;
     gap: 10px;
-    order: 2;
+    order: 3; 
+    margin-left: 15px;
 }
+
 
 .logo-container img {
     height: 40px;
     transition: transform 0.3s ease;
 }
 
-.logo-container:hover img {
+/* .logo-container:hover img {
     transform: rotate(15deg);
 }
-
+ */
 .logo-text {
     font-family: 'Reem Kufi Fun', sans-serif;
     font-size: 24px;

@@ -9,36 +9,29 @@ use Illuminate\Support\Facades\Auth;
 
 class FavoriteController extends Controller
 {
-    public function toggle(Request $request)
-    {
-        $request->validate(['product_id' => 'required|exists:products,id']);
+public function toggle(Request $request)
+{
+    $request->validate(['product_id' => 'required|exists:products,id']);
+    $userId    = Auth::id();
+    $productId = $request->product_id;
 
-        $userId = Auth::id();
-        $productId = $request->product_id;
+    $favorite = Favorite::where('user_id', $userId)
+                        ->where('product_id', $productId)
+                        ->first();
 
-        $favorite = Favorite::where('user_id', $userId)
-                            ->where('product_id', $productId)
-                            ->first();
-
-        if ($favorite) {
-            $favorite->delete();
-            $isFavorite = false;
-            $message = 'Removed from favorites';
-        } else {
-            Favorite::create([
-                'user_id' => $userId,
-                'product_id' => $productId,
-            ]);
-            $isFavorite = true;
-            $message = 'Added to favorites';
-        }
-
-        return response()->json([
-            'success' => true,
-            'is_favorite' => $isFavorite,
-            'message' => $message
-        ]);
+    if ($favorite) {
+        $favorite->delete();
+        $isFavorite = false;
+    } else {
+        Favorite::create(['user_id' => $userId, 'product_id' => $productId]);
+        $isFavorite = true;
     }
+
+    return response()->json([
+        'success'     => true,
+        'is_favorite' => $isFavorite,
+    ]);
+}
     public function index(Request $request)
 {
     $query = Product::query();

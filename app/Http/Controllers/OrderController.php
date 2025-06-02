@@ -126,4 +126,19 @@ public function cancel(Order $order)
 
     return response()->json(['success' => true, 'message' => 'Order cancelled successfully!']);
 }
+
+public function updateStatus(Request $request, Order $order)
+{
+    $request->validate(['status' => 'required|string']);
+    $order->status = $request->status;
+    $order->save();
+    return response()->json(['success' => true, 'status' => $order->status]);
+}
+
+public function update(Request $request, $id) {
+    $order = Order::findOrFail($id);
+    $order->update($request->all());
+    return redirect()->back()->with('success', 'Order updated successfully.');
+}
+
 }

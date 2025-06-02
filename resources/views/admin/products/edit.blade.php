@@ -21,6 +21,20 @@
         <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
+
+            <!-- Category Selection -->
+            <div class="form-group">
+                <label for="category_id">Category</label>
+                <select name="category_id" id="category_id" class="form-control" required>
+                    <option value="">-- Select Category --</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}"
+                            {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             
             <div class="form-group">
                 <label for="name">Product Name</label>
@@ -41,40 +55,51 @@
                 <label for="image">Product Image</label>
                 <input type="file" id="image" name="image" accept="image/*">
                 <small>Leave empty to keep the current image</small>
-                
                 <div class="image-preview-container">
-                    <div id="image-preview" class="image-preview" style="background-image: url'{{ asset('storage/' . $product->image) }}'"></div>
+                    <div id="image-preview" class="image-preview" 
+                        @if($product->image)
+                            style="background-image: url('{{ asset('storage/' . $product->image) }}')"
+                        @endif
+                    >
+                        @if(!$product->image)
+                            <span class="preview-text">Image Preview</span>
+                        @endif
+                    </div>
                 </div>
             </div>
             
+            <div class="form-group">
+                <label for="extra_images">Extra Images</label>
+                <input type="file" id="extra_images" name="extra_images[]" accept="image/*" multiple>
+                <small>You can select multiple images</small>
+            </div>
+
             <div class="form-buttons">
                 <button type="submit" class="btn-save">Update Product</button>
                 <a href="{{ route('admin.products.index') }}" class="btn-cancel">Cancel</a>
             </div>
-            <div class="form-group">
-            <label for="extra_images">Extra Images</label>
-            <input type="file" id="extra_images" name="extra_images[]" accept="image/*" multiple>
-            <small>You can select multiple images</small>
-        </div>
-            @if($product->images->count())
-    <div class="image-preview-container mt-3">
-        <label>Current Extra Images:</label>
-        <div style="display: flex; gap: 10px;">
-            @foreach($product->images as $img)
-                <div style="position:relative;">
-                    <img src="{{ asset('storage/' . $img->image) }}" alt="Extra Image" width="80" style="border-radius:5px;">
-                    <form action="{{ route('admin.products.images.destroy', $img->id) }}" method="POST" style="position:absolute;top:0;right:0;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" style="padding:2px 6px;">&times;</button>
-                    </form>
-                </div>
-            @endforeach
-        </div>
-    </div>
-@endif
         </form>
     </div>
+
+    {{-- Show current extra images and delete buttons separately, NOT inside the main form --}}
+    @if($product->images && $product->images->count())
+        <div class="image-preview-container mt-3">
+            <label>Current Extra Images:</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                @foreach($product->images as $img)
+                    <div style="position:relative;">
+                        <img src="{{ asset('storage/' . $img->image) }}" alt="Extra Image" width="80" style="border-radius:5px;">
+                        <form action="{{ route('admin.products.images.destroy', $img->id) }}" method="POST" style="position:absolute;top:0;right:0;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm" style="padding:2px 6px;">&times;</button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
 </div>
 
 <style>
@@ -83,19 +108,16 @@
         margin: 0 auto;
         padding: 20px;
     }
-    
     .admin-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
     }
-    
     .admin-header h1 {
         color: rgb(145, 51, 51);
         margin: 0;
     }
-    
     .btn-back {
         background-color: #6c757d;
         color: white;
@@ -104,67 +126,57 @@
         text-decoration: none;
         transition: background-color 0.3s;
     }
-    
     .btn-back:hover {
         background-color: #5a6268;
     }
-    
     .alert {
         padding: 15px;
         margin-bottom: 20px;
         border-radius: 5px;
     }
-    
     .alert-danger {
         background-color: #f2dede;
         color: #a94442;
         border: 1px solid #ebccd1;
     }
-    
     .alert-danger ul {
         margin: 0;
         padding-left: 20px;
     }
-    
     .product-form {
         background-color: white;
         padding: 30px;
         border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    
     .form-group {
         margin-bottom: 20px;
     }
-    
     .form-group label {
         display: block;
         margin-bottom: 5px;
         font-weight: bold;
         color: #555;
     }
-    
     .form-group input[type="text"],
     .form-group input[type="number"],
-    .form-group textarea {
+    .form-group textarea, 
+    .form-group select {
         width: 100%;
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 4px;
         font-size: 16px;
     }
-    
     .form-group small {
         display: block;
         margin-top: 5px;
         color: #777;
         font-style: italic;
     }
-    
     .image-preview-container {
         margin-top: 10px;
     }
-    
     .image-preview {
         width: 200px;
         height: 200px;
@@ -177,14 +189,17 @@
         font-size: 14px;
         background-size: cover;
         background-position: center;
+        position: relative;
     }
-    
+    .image-preview .preview-text {
+        position: absolute;
+        z-index: 1;
+    }
     .form-buttons {
         display: flex;
         gap: 15px;
         margin-top: 30px;
     }
-    
     .btn-save, .btn-cancel {
         padding: 12px 24px;
         border-radius: 5px;
@@ -193,25 +208,21 @@
         text-decoration: none;
         text-align: center;
     }
-    
     .btn-save {
         background-color: rgb(145, 51, 51);
         color: white;
         border: none;
         flex: 1;
     }
-    
     .btn-save:hover {
         background-color: #d9534f;
     }
-    
     .btn-cancel {
         background-color: #f8f9fa;
         border: 1px solid #ddd;
         color: #555;
         flex: 1;
     }
-    
     .btn-cancel:hover {
         background-color: #e9ecef;
     }

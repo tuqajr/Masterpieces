@@ -6,13 +6,12 @@
     <title>Contact Us - Tatreez Traditions</title>
     
     <link rel="stylesheet" href="css/navbar-footer.css">
-
     <link href="https://fonts.googleapis.com/css2?family=Orpheus+Pro&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alkalami&family=Badeen+Display&family=Handjet:wght@100..900&family=Reem+Kufi+Fun:wght@400..700&family=Reem+Kufi:wght@400..700&family=Ruwudu:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
+        <style>
         /* Base styles */
         * {
             margin: 0;
@@ -306,66 +305,69 @@
   </head>
   <body>
     <header>
-    <div class="navbar">
-          <div class="icons">
-            <a href="{{ route('cart.show') }}" class="cart-icon">
+      <div class="navbar">
+        <div class="icons">
+          <a href="{{ route('cart.show') }}" class="cart-icon">
             <i class="fas fa-shopping-cart"></i>
             <span id="cart-count">
-                @auth
-                    {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
-                @else
-                    0
-                @endauth
+              @auth
+                {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
+              @else
+                0
+              @endauth
             </span>
-        </a>
-                
-            @if(Auth::check())
-                <div class="login-register-dropdown">
-                    <a href="#" class="dropdown-toggle">
-                        <span style="margin-right: 5px;">Welcome,</span>
-                        <span>{{ Auth::user()->name }}</span>
-                    </a>
-                    <div class="dropdown-content">
-                        @if(Auth::user()->is_admin)
-                            <a href="{{ route('admin.dashboard') }}">Dashboard</a>
-                        @else
-                            <a href="{{ route('dashboard') }}">Dashboard</a>
-                        @endif
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit">Logout</button>
-                        </form>
-                    </div>
+          </a>
+          @if(Auth::check())
+            <div class="login-register-dropdown">
+                <a href="#" class="dropdown-toggle" style="display: flex; align-items: center; white-space: nowrap;">
+                    <span style="margin-right: 5px;">Welcome,</span>
+                    <span>{{ Auth::user()->name }}</span>
+                </a>
+                <div class="dropdown-content">
+                    @if(Auth::user()->is_admin)
+                        <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+                    @endif
+                    <a href="{{ route('dashboard') }}">Profile</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" style="border: none; background: none; padding: 8px 16px; font-size: 14px; color: rgb(155, 55, 55); width: 100%; text-align: left; cursor: pointer;">
+                            Logout
+                        </button>
+                    </form>
                 </div>
-            @else
-                <div class="login-register-dropdown">
-                    <a href="#" class="dropdown-toggle">User</a>
-                    <div class="dropdown-content">
-                        <a href="{{ route('login') }}">Login</a>
-                        <a href="{{ route('register') }}">Register</a>
-                    </div>
+            </div>
+          @else
+            <div class="login-register-dropdown">
+                <a href="#" class="dropdown-toggle">User</a>
+                <div class="dropdown-content">
+                    <a href="{{ route('login') }}">Login</a>
+                    <a href="{{ route('register') }}">Register</a>
                 </div>
-            @endif
+            </div>
+          @endif
         </div>
-        
-       <ul id="navMenu">
+        <ul id="navMenu">
             <li><a href="{{ url('/') }}">Home</a></li>
+            @if(Auth::check() && Auth::user()->is_admin)
+                <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+            @endif
+            @if(Auth::check())
+                <li><a href="{{ route('dashboard') }}">Profile</a></li>
+            @endif
             <li><a href="{{ url('/shop') }}">Shop</a></li>
             <li><a href="{{ url('/learn') }}">Learn</a></li>
             <li><a href="{{ url('/about') }}">About</a></li>
             <li><a href="{{ url('/contact') }}">Contact</a></li>
-            </ul>
-        
+        </ul>
         <div class="logo-container">
             <span class="logo-text">غرزه</span>
-            <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Logo">
+            <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Tatreez Logo">
         </div>
-        
         <div class="menu-toggle">
             <i class="fas fa-bars"></i>
         </div>
-    </div>
-</header>
+      </div>
+    </header>
 
     <div class="contact-container">
         <!-- Contact Info Section -->
@@ -382,7 +384,6 @@
                         <p>123 Embroidery Street, Artisan District, Amman, Jordan</p>
                     </div>
                 </div>
-                
                 <div class="info-item">
                     <i class="fas fa-phone-alt"></i>
                     <div class="info-item-details">
@@ -390,7 +391,6 @@
                         <p>+123 456 789</p>
                     </div>
                 </div>
-                
                 <div class="info-item">
                     <i class="fas fa-envelope"></i>
                     <div class="info-item-details">
@@ -398,7 +398,6 @@
                         <p>info@tatreez.com</p>
                     </div>
                 </div>
-                
                 <div class="info-item">
                     <i class="fas fa-clock"></i>
                     <div class="info-item-details">
@@ -408,7 +407,6 @@
                 </div>
             </div>
         </div>
-        
         <!-- Contact Form Section -->
         <div class="contact-form">
             <div class="section-title">
@@ -420,22 +418,18 @@
                     <label for="name">Your Name</label>
                     <input type="text" id="name" name="name" placeholder="Enter your name" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" placeholder="Enter your email" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="subject">Subject</label>
                     <input type="text" id="subject" name="subject" placeholder="Enter subject" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="message">Message</label>
                     <textarea id="message" name="message" placeholder="Type your message here..." required></textarea>
                 </div>
-                
                 <button type="submit">
                     <i class="fas fa-paper-plane"></i> Send Message
                 </button>
@@ -457,7 +451,6 @@
                     <a href="#"><i class="fab fa-pinterest-p"></i></a>
                 </div>
             </div>
-            
             <div class="footer-section">
                 <h4>Quick Links</h4>
                 <ul>
@@ -468,7 +461,6 @@
                     <li><a href="{{ url('/contact') }}">Contact</a></li>
                 </ul>
             </div>
-            
             <div class="footer-section">
                 <h4>Contact</h4>
                 <ul>
@@ -478,7 +470,6 @@
                 </ul>
             </div>
         </div>
-        
         <div class="footer-bottom">
             <p>&copy; 2025 Tatreez Traditions. All rights reserved.</p>
         </div>
@@ -487,102 +478,62 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-    const cartCountElement = document.getElementById("cart-count");
-
-    // Function to fetch cart count from server
-    function fetchCartCount() {
-        fetch('/cart/count')
-            .then(response => response.json())
-            .then(data => {
-                if (cartCountElement) {
-                    cartCountElement.textContent = data.count;
-                }
-            })
-            .catch(() => {
-                // Fallback: for guests, use localStorage
-                if (cartCountElement) {
-                    let guestCart = JSON.parse(localStorage.getItem("cart")) || [];
-                    cartCountElement.textContent = guestCart.length;
-                }
-            });
-    }
-
-    fetchCartCount();
-
-    // Optionally, re-call fetchCartCount after AJAX add-to-cart or remove, if you use AJAX for those
-    // For example, after a successful add-to-cart:
-    // fetchCartCount();
-});
-        
+      // Toggle mobile menu
       document.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navMenu = document.querySelector('#navMenu');
-    
-    menuToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('show');
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(event) {
-        if (!event.target.closest('.navbar') && navMenu.classList.contains('show')) {
-            navMenu.classList.remove('show');
-        }
-    });
-        const quantityInputs = document.querySelectorAll('.quantity-form input[name="quantity"]');
-        if (quantityInputs) {
-            quantityInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                   
-                });
-            });
-        }
-    
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navMenu = document.querySelector('#navMenu');
         
-    
-            // Email sending functionality
-            emailjs.init('ocAT76gWIBqPj_Mx2');  
-            
-            $("#contactForm").submit(function (event) {
-                event.preventDefault();
-                $("#loading").show();  
-
-                let name = $("#name").val().trim();
-                let email = $("#email").val().trim();
-                let subject = $("#subject").val().trim();
-                let message = $("#message").val().trim();
-
-                if (!name || !email || !subject || !message) {
-                    alert("All fields are required!");
-                    $("#loading").hide();
-                    return;
-                }
-
-                let params = {
-                    name: name,
-                    email: email,
-                    subject: subject,
-                    message: message
-                };
-
-                emailjs.send('service_e8cg9vn', 'template_8ghikqm', params)
-                    .then(() => {
-                        $("#feedback").show();
-                        $("#loading").hide();
-                        $("#contactForm")[0].reset();
-                        
-                        // Hide the feedback message after 5 seconds
-                        setTimeout(function() {
-                            $("#feedback").fadeOut();
-                        }, 5000);
-                    })
-                    .catch((error) => {
-                        alert("Failed to send email. Please try again later.");
-                        console.error("FAILED...", error);
-                        $("#loading").hide();
-                    });
-            });
+        menuToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('show');
         });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.navbar') && navMenu.classList.contains('show')) {
+                navMenu.classList.remove('show');
+            }
+        });
+
+        // Email sending functionality (unchanged)
+        emailjs.init('ocAT76gWIBqPj_Mx2');  
+        $("#contactForm").submit(function (event) {
+            event.preventDefault();
+            $("#loading").show();  
+
+            let name = $("#name").val().trim();
+            let email = $("#email").val().trim();
+            let subject = $("#subject").val().trim();
+            let message = $("#message").val().trim();
+
+            if (!name || !email || !subject || !message) {
+                alert("All fields are required!");
+                $("#loading").hide();
+                return;
+            }
+
+            let params = {
+                name: name,
+                email: email,
+                subject: subject,
+                message: message
+            };
+
+            emailjs.send('service_e8cg9vn', 'template_8ghikqm', params)
+                .then(() => {
+                    $("#feedback").show();
+                    $("#loading").hide();
+                    $("#contactForm")[0].reset();
+                    setTimeout(function() {
+                        $("#feedback").fadeOut();
+                    }, 5000);
+                })
+                .catch((error) => {
+                    alert("Failed to send email. Please try again later.");
+                    console.error("FAILED...", error);
+                    $("#loading").hide();
+                });
+        });
+      });
     </script>
     <script src="js/navbar-footer.js"></script>
   </body>

@@ -2,47 +2,57 @@
 
 @section('content')
 @include('partials.navbar')
+
 <div class="container order-details-container">
     <div class="page-header">
         <div class="header-left">
-                <a href="{{ route('orders.index') }}" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> Back to Orders
+            <a href="{{ route('orders.index') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Orders
             </a>
             <h1>Order Details</h1>
             <p class="order-number">Order #{{ $order->order_number }}</p>
         </div>
         <div class="header-right">
-            <span class="status-badge status-{{ strtolower($order->status) }}">
-                {{ ucfirst($order->status) }}
+            <span id="order-header-badge"
+                  class="status-badge status-{{ strtolower($order->status) }}">
+                {{ ucwords(str_replace('_',' ', $order->status)) }}
             </span>
+            <select class="status-select"
+                    data-order-id="{{ $order->id }}"
+                    style="margin-left:10px;padding:6px;border-radius:4px;">
+                @foreach(['pending','confirmed','preparing','out_for_delivery','delivered','cancelled'] as $s)
+                    <option value="{{ $s }}" @if($order->status === $s) selected @endif>
+                        {{ ucwords(str_replace('_',' ', $s)) }}
+                    </option>
+                @endforeach
+            </select>
         </div>
     </div>
 
     <!-- Order Progress Bar -->
-    @php
-        $progressWidth = match($order->status) {
-            'pending' => '25%',
-            'confirmed' => '50%',
-            'preparing' => '75%',
-            'delivered' => '100%',
-            default => '25%'
-        };
-    @endphp
-    
     <div class="progress-container">
         <div class="progress-bar">
-         <div class="progress-fill" data-progress="{{ $progressWidth }}"></div>
+            <div id="order-progress-fill"
+                 class="progress-fill"
+                 data-progress="{{ $progressWidth }}">
+            </div>
         </div>
         <div class="progress-steps">
-            <span class="{{ in_array($order->status, ['pending', 'confirmed', 'preparing', 'delivered']) ? 'active' : '' }}">Pending</span>
-            <span class="{{ in_array($order->status, ['confirmed', 'preparing', 'delivered']) ? 'active' : '' }}">Confirmed</span>
-            <span class="{{ in_array($order->status, ['preparing', 'delivered']) ? 'active' : '' }}">Preparing</span>
-            <span class="{{ $order->status == 'delivered' ? 'active' : '' }}">Delivered</span>
+            <span class="{{ in_array($order->status, ['pending','confirmed','preparing','delivered']) ? 'active' : '' }}">
+                Pending
+            </span>
+            <span class="{{ in_array($order->status, ['confirmed','preparing','delivered']) ? 'active' : '' }}">
+                Confirmed
+            </span>
+            <span class="{{ in_array($order->status, ['preparing','delivered']) ? 'active' : '' }}">
+                Preparing
+            </span>
+            <span class="{{ $order->status === 'delivered' ? 'active' : '' }}">
+                Delivered
+            </span>
         </div>
     </div>
 
-    <div class="order-details-grid">
-        <!-- Order Information -->
         <div class="details-card">
             <h3>Order Information</h3>
             <div class="info-grid">
@@ -52,11 +62,16 @@
                 </div>
                 <div class="info-item">
                     <span class="label">Order Status:</span>
-                    <span class="value status-{{ strtolower($order->status) }}">{{ ucfirst($order->status) }}</span>
+                    <span id="order-status-value"
+                          class="value status-{{ strtolower($order->status) }}">
+                        {{ ucwords(str_replace('_',' ', $order->status)) }}
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="label">Payment Status:</span>
-                    <span class="value status-{{ strtolower($order->payment_status) }}">{{ ucfirst($order->payment_status) }}</span>
+                    <span class="value status-{{ strtolower($order->payment_status) }}">
+                        {{ ucfirst($order->payment_status) }}
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="label">Payment Method:</span>
@@ -104,7 +119,7 @@
                         @if($order->status === 'delivered' && $order->delivered_at)
                             {{ $order->delivered_at->format('M d, Y at h:i A') }}
                         @else
-                            Estimated: 30-45 minutes
+                            Estimated: 30–45 minutes
                         @endif
                     </span>
                 </div>
@@ -136,49 +151,44 @@
             </div>
             @endforeach
         </div>
-
-        <!-- Order Summary -->
         <div class="order-summary">
             <div class="summary-row">
                 <span>Subtotal:</span>
-                <span>${{ number_format($order->orderItems->sum(function($item) { return $item->price * $item->quantity; }), 2) }}</span>
+                <span>${{ number_format($order->orderItems->sum(fn($i)=>$i->price*$i->quantity),2) }}</span>
             </div>
             @if($order->delivery_fee > 0)
             <div class="summary-row">
                 <span>Delivery Fee:</span>
-                <span>${{ number_format($order->delivery_fee, 2) }}</span>
+                <span>${{ number_format($order->delivery_fee,2) }}</span>
             </div>
             @endif
             @if($order->tax_amount > 0)
             <div class="summary-row">
                 <span>Tax:</span>
-                <span>${{ number_format($order->tax_amount, 2) }}</span>
+                <span>${{ number_format($order->tax_amount,2) }}</span>
             </div>
             @endif
             <div class="summary-row total-row">
                 <span>Total:</span>
-                <span>${{ number_format($order->total_amount, 2) }}</span>
+                <span>${{ number_format($order->total_amount,2) }}</span>
             </div>
         </div>
     </div>
 
     <!-- Order Actions -->
     <div class="order-actions">
-       
         @if($order->status === 'delivered')
-            <a href="{{ route('orders.reorder', $order->id) }}" class="btn btn-primary">
-                <i class="fas fa-redo"></i> Reorder
-            </a>
+        <a href="{{ route('orders.reorder', $order->id) }}" class="btn btn-primary">
+            <i class="fas fa-redo"></i> Reorder
+        </a>
         @endif
-        
         <button class="btn btn-outline" onclick="printOrder()">
             <i class="fas fa-print"></i> Print Receipt
         </button>
-
         @if($order->status === 'pending')
-            <button class="btn btn-danger" onclick="cancelOrder('{{ $order->id }}')">
-                <i class="fas fa-times"></i> Cancel Order
-            </button>
+        <button class="btn btn-danger" onclick="cancelOrder('{{ $order->id }}')">
+            <i class="fas fa-times"></i> Cancel Order
+        </button>
         @endif
     </div>
 </div>
@@ -273,9 +283,9 @@
 }
 
 .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #007bff, #0056b3);
-    transition: width 0.3s ease;
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  transition: width 0.3s ease;
 }
 
 .progress-steps {
@@ -518,38 +528,109 @@
 </style>
 
 <script>
-function trackOrder(orderNumber) {
-    alert('Order tracking for #' + orderNumber + ' - Feature coming soon!');
-}
+  document.addEventListener('DOMContentLoaded', () => {
+    const fill = document.getElementById('order-progress-fill');
+    if (fill) fill.style.width = fill.dataset.progress;
+  });
 
-function printOrder() {
-    window.print();
-}
+  const AJAX_HEADERS = {
+    'Content-Type':     'application/json',
+    'Accept':           'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-CSRF-TOKEN':     document.querySelector('meta[name="csrf-token"]').content
+  };
 
-function cancelOrder(orderId) {
-    if (confirm('Are you sure you want to cancel this order?')) {
-        fetch(`/orders/${orderId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Order cancelled successfully');
-                location.reload();
-            } else {
-                alert('Failed to cancel order: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while cancelling the order');
-        });
+  const STATUS_PROGRESS = {
+    pending:          '25%',
+    confirmed:        '50%',
+    preparing:        '75%',
+    out_for_delivery: '100%',
+    delivered:        '100%',
+    cancelled:        '25%',
+  };
+
+  function formatLabel(str) {
+    return str.replace(/_/g,' ')
+              .replace(/\b\w/g,c=>c.toUpperCase());
+  }
+
+  function updateOrderStatusInDOM(newStatus) {
+    // header badge
+    const badge = document.getElementById('order-header-badge');
+    if (badge) {
+      badge.textContent = formatLabel(newStatus);
+      badge.className = `status-badge status-${newStatus}`;
     }
-}
+    // detail label
+    const detail = document.getElementById('order-status-value');
+    if (detail) {
+      detail.textContent = formatLabel(newStatus);
+      detail.className = `value status-${newStatus}`;
+    }
+    // progress fill
+    const fill = document.getElementById('order-progress-fill');
+    if (fill && STATUS_PROGRESS[newStatus]) {
+      fill.style.width = STATUS_PROGRESS[newStatus];
+      fill.dataset.progress = STATUS_PROGRESS[newStatus];
+    }
+    // progress steps
+    const orderSeq = ['pending','confirmed','preparing','delivered'];
+    const idx = orderSeq.indexOf(newStatus==='out_for_delivery'?'delivered':newStatus);
+    document.querySelectorAll('.progress-steps span').forEach((el, i) => {
+      el.classList.toggle('active', i <= idx);
+    });
+  }
+
+  function updateOrderStatus(orderId, newStatus, selectElem) {
+    fetch(`/admin/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: AJAX_HEADERS,
+      body: JSON.stringify({ status: newStatus }),
+    })
+    .then(res => res.ok ? res.json() : Promise.reject(res))
+    .then(data => {
+      if (data.success) {
+        updateOrderStatusInDOM(newStatus);
+      } else {
+        return Promise.reject(new Error(data.error||'Unknown error'));
+      }
+    })
+    .catch(async err => {
+      if (selectElem) selectElem.value = selectElem.dataset.originalValue;
+      console.error(err instanceof Response
+        ? `Error ${err.status}: ${await err.text()}`
+        : err);
+      alert('Error updating status');
+    });
+  }
+
+  document.querySelectorAll('.status-select').forEach(s => {
+    s.dataset.originalValue = s.value;
+    s.addEventListener('change', e => {
+      e.preventDefault();
+      updateOrderStatus(s.dataset.orderId, s.value, s);
+    });
+  });
+
+  function printOrder() {
+    window.print();
+  }
+
+  function cancelOrder(orderId) {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+    fetch(`/orders/${orderId}/cancel`, {
+      method: 'POST',
+      headers: AJAX_HEADERS,
+    })
+    .then(res => res.ok ? res.json() : Promise.reject(res))
+    .then(data => {
+      if (data.success) location.reload();
+      else alert('Failed to cancel order: ' + data.message);
+    })
+    .catch(err => {
+      console.error(err);
+      alert('An error occurred while cancelling the order');
+    });
+  }
 </script>
 @endsection

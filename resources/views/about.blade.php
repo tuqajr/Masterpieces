@@ -581,9 +581,9 @@
 
     <section class="founder-section">
         <div class="founder-container">
-            <div class="founder-image">
+           <!--  <div class="founder-image">
                 <img src="{{ asset('images/girl.jpeg') }}" alt="Founder of Tatreez Traditions">
-            </div>
+            </div> -->
             <div class="founder-text">
                 <h2>Our Founder's Story</h2>
                 <p>Born from a deep passion for Palestinian heritage, Tatreez Traditions was founded by Tuqa Jaradat, whose grandmother first taught her the art of embroidery at the age of seven.</p>

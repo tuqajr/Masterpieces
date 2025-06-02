@@ -19,12 +19,26 @@
     
     <div class="product-form">
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-    <!-- Product name input -->
-    <div class="form-group">
-        <label for="name">Product Name</label>
-        <input type="text" name="name" class="form-control" required>
-    </div>
+            @csrf
+
+            <!-- Category Selection -->
+            <div class="form-group">
+                <label for="category_id">Category</label>
+                <select name="category_id" id="category_id" class="form-control" required>
+                    <option value="">-- Select Category --</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <!-- Product name input -->
+            <div class="form-group">
+                <label for="name">Product Name</label>
+                <input type="text" name="name" class="form-control" required value="{{ old('name') }}">
+            </div>
             
             <div class="form-group">
                 <label for="description">Description</label>
@@ -37,27 +51,26 @@
             </div>
             
             <div class="form-group">
-    <label for="image">Product Image</label>
-    <div class="custom-file-upload">
-        <input type="file" id="image" name="image" accept="image/*" class="file-input" onchange="previewImage(this);">
-        <label for="image" class="file-label">
-            <span class="btn-upload">Choose File</span>
-            <span class="file-name">No file chosen</span>
-        </label>
-    </div>
-    
-    <div class="image-preview-container">
-        <div id="image-preview" class="image-preview">
-            <span class="preview-text">Image Preview</span>
-        </div>
-    </div>
-</div>
-<div class="form-group">
-    <label for="extra_images">Extra Images</label>
-    <input type="file" id="extra_images" name="extra_images[]" accept="image/*" multiple>
-    <small>You can select multiple images</small>
-</div>
+                <label for="image">Product Image</label>
+                <div class="custom-file-upload">
+                    <input type="file" id="image" name="image" accept="image/*" class="file-input" onchange="previewImage(this);">
+                    <label for="image" class="file-label">
+                        <span class="btn-upload">Choose File</span>
+                        <span class="file-name">No file chosen</span>
+                    </label>
+                </div>
+                
+                <div class="image-preview-container">
+                    <div id="image-preview" class="image-preview">
+                        <span class="preview-text">Image Preview</span>
+                    </div>
+                </div>
+            </div>
 
+            <div class="form-group">
+                <label for="extra_images">Extra Images</label>
+                <input type="file" id="extra_images" name="extra_images[]" accept="image/*" multiple>
+                <small>You can select multiple images</small>
             </div>
             
             <div class="form-buttons">

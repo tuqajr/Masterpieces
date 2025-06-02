@@ -16,26 +16,21 @@ class CategoryController extends Controller
     return view('admin.categories.index', compact('categories', 'products'));
     }
 
-    public function create()
-    {
-        return view('admin.categories.create');
-    }
+public function create()
+{
+    return view('admin.Categories.create');
+}
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
-            'description' => 'nullable|string',
-        ]);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255|unique:categories,name',
+    ]);
 
-        $category = new Category();
-        $category->name = $validated['name'];
-        $category->slug = Str::slug($validated['name']);
-        $category->description = $validated['description'] ?? null;
-        $category->save();
+    \App\Models\Category::create($validated);
 
-        return redirect()->route('admin.categories.index')->with('success', 'Category created successfully');
-    }
+    return redirect()->route('admin.categories.index')->with('success', 'Category created!');
+}
 
     public function edit($id)
     {

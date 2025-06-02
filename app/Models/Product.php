@@ -27,7 +27,8 @@ class Product extends Model
    // Many-to-many: A product can be favorited by many users
 public function favoritedByUsers()
 {
-    return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+    return $this->belongsToMany(User::class, 'favorites', 'product_id', 'user_id')
+        ->withTimestamps();
 }
 
 // Helper method to check if a product is favorited by a specific user

@@ -31,57 +31,60 @@
 <body>
     <header>
     <div class="navbar">
-         <div class="icons">
-        @if(Auth::check())
+<div class="icons">
+    @if(Auth::check())
         <a href="{{ route('cart.show') }}" class="cart-icon">
             <i class="fas fa-shopping-cart"></i>
             <span id="cart-count">
                 {{ \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity') }}
             </span>
         </a>
-        @endif
-        
-        @if(Auth::check())
+    @endif
+
+@if(Auth::check())
     <div class="login-register-dropdown">
         <a href="#" class="dropdown-toggle" style="display: flex; align-items: center; white-space: nowrap;">
             <span style="margin-right: 5px;">Welcome,</span>
             <span>{{ Auth::user()->name }}</span>
         </a>
         <div class="dropdown-content">
-                    @if(Auth::user()->is_admin)
-                        <a href="{{ route('admin.dashboard') }}">Dashboard</a>
-                    @else
-                        <a href="{{ route('dashboard') }}">Profile</a>
-                    @endif
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" style="border: none; background: none; padding: 8px 16px; font-size: 14px; color: rgb(155, 55, 55); width: 100%; text-align: left; cursor: pointer;">
-                            Logout
-                        </button>
-                    </form>
-                </div>
-            </div>
-        @else
-            <div class="login-register-dropdown">
-                <a href="#" class="dropdown-toggle">User</a>
-                <div class="dropdown-content">
-                    <a href="{{ route('login') }}">Login</a>
-                    <a href="{{ route('register') }}">Register</a>
-                </div>
-            </div>
-        @endif
-
+            @if(Auth::user()->is_admin)
+                <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+            @endif
+            <a href="{{ route('dashboard') }}">Profile</a>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" style="border: none; background: none; padding: 8px 16px; font-size: 14px; color: rgb(155, 55, 55); width: 100%; text-align: left; cursor: pointer;">
+                    Logout
+                </button>
+            </form>
         </div>
-            
-            <ul id="navMenu">
-            <li><a href="{{ url('/') }}">Home</a></li>
-            <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-            <li><a href="{{ url('/shop') }}">Shop</a></li>
-            <li><a href="{{ url('/learn') }}">Learn</a></li>
-            <li><a href="{{ url('/about') }}">About</a></li>
-            <li><a href="{{ url('/contact') }}">Contact</a></li>
-            </ul>
-            
+    </div>
+@else
+        <div class="login-register-dropdown">
+            <a href="#" class="dropdown-toggle">User</a>
+            <div class="dropdown-content">
+                <a href="{{ route('login') }}">Login</a>
+                <a href="{{ route('register') }}">Register</a>
+            </div>
+        </div>
+    @endif
+</div>       
+
+
+<ul id="navMenu">
+    <li><a href="{{ url('/') }}">Home</a></li>
+    @if(Auth::check() && Auth::user()->is_admin)
+        <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    @endif
+    @if(Auth::check())
+        <li><a href="{{ route('dashboard') }}">Profile</a></li>
+    @endif
+    <li><a href="{{ url('/shop') }}">Shop</a></li>
+    <li><a href="{{ url('/learn') }}">Learn</a></li>
+    <li><a href="{{ url('/about') }}">About</a></li>
+    <li><a href="{{ url('/contact') }}">Contact</a></li>
+</ul>           
             <div class="logo-container">
                 <span class="logo-text">غرزه</span>
                 <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Tatreez Logo">

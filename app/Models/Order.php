@@ -14,6 +14,7 @@ class Order extends Model
         'total',
         'status',
         'delivery_date',
+        'delivered_at',
         'shipping_address',
         'phone',
         'payment_status',
@@ -23,6 +24,7 @@ class Order extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'delivery_date' => 'datetime',
+        'delivered_at' => 'datetime',
         'total' => 'decimal:2',
     ];
 

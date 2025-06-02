@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
-use App\Models\Order;
+
 use App\Models\Product;
 use App\Models\CartItem;
 use App\Models\Traits\HasCartItems;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Order;
 
 class User extends Authenticatable
 {
@@ -38,7 +40,7 @@ class User extends Authenticatable
     /**
      * Get all orders for the user.
      */
-    public function orders(): HasMany
+    public function orders()
     {
         return $this->hasMany(Order::class);
     }
@@ -46,7 +48,7 @@ class User extends Authenticatable
     /**
      * Check if user is admin.
      */
-    public function isAdmin()
+    public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
@@ -70,9 +72,11 @@ class User extends Authenticatable
     /**
      * The products that the user has favorited.
      */
-    public function favorites(): BelongsToMany
+
+    public function favorites()
     {
-        return $this->belongsToMany(Product::class, 'favorites', 'user_id', 'product_id')->withTimestamps();
+        return $this->belongsToMany(Product::class, 'favorites', 'user_id', 'product_id')
+            ->withTimestamps();
     }
 
     /**
@@ -82,4 +86,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(CartItem::class);
     }
+
+    
 }
+

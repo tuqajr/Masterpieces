@@ -2,10 +2,11 @@
 
 @section('content')
 <div class="container">
-    <div class="admin-header">
-        <h1>Add New Category</h1>
-        <a href="{{ route('admin.categories.index') }}" class="btn-add">Back to Categories</a>
+    <div class="admin-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <h1 style="margin:0;">Add New Category</h1>
+        <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Back to Categories</a>
     </div>
+
     @if ($errors->any())
         <div class="alert alert-danger">
             <ul style="margin: 0;">
@@ -15,17 +16,15 @@
             </ul>
         </div>
     @endif
-    <form action="{{ route('admin.categories.store') }}" method="POST" style="max-width: 600px;">
+
+    <form action="{{ route('admin.categories.store') }}" method="POST" style="max-width:600px;">
         @csrf
         <div class="form-group" style="margin-bottom: 20px;">
-            <label for="name">Category Name</label>
-            <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
+            <label for="name" class="form-label">Category Name <span style="color:red">*</span></label>
+            <input type="text" name="name" id="name" class="form-control"
+                   value="{{ old('name') }}" required maxlength="255" placeholder="e.g. Dresses, Accessories, Home Decor">
         </div>
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label for="description">Description</label>
-            <textarea name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
-        </div>
-        <button type="submit" class="btn-add">Save Category</button>
+        <button type="submit" class="btn btn-primary">Save Category</button>
     </form>
 </div>
 @endsection

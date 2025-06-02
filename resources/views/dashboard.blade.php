@@ -623,8 +623,7 @@
                     </div>
                 </div>
 
-                <!-- Recent Orders -->
-                <div class="profile-section">
+<div class="profile-section">
     <div class="section-title">
         <i class="fas fa-shopping-bag"></i>
         Recent Orders
@@ -632,7 +631,7 @@
     <div class="section-content">
         @if($orders->count() > 0)
             @foreach($orders as $order)
-            <div class="order-item">
+            <div class="order-item" id="order-{{ $order->id }}">
                 <p><strong>Order #:</strong> {{ $order->id }}</p>
                 <p><strong>Date:</strong> {{ $order->created_at->format('d M, Y') }}</p>
                 <p><strong>Status:</strong> 
@@ -641,12 +640,11 @@
                     </span>
                 </p>
                 <p><strong>Total:</strong> ${{ number_format($order->total, 2) }}</p>
-                <a href="{{ route('orders.show', $order->id) }}" class="view-button">View Details</a>
-               @if($order->status === 'pending')
-                <button class="cancel-button" onclick="cancelOrder('{{ $order->id }}')">
+                @if($order->status === 'pending')
+                <button class="cancel-button" onclick="cancelOrder('{{ $order->id }}', this)">
                     Cancel Order
                 </button>
-            @endif
+                @endif
             </div>
             @endforeach
         @else
@@ -654,48 +652,6 @@
         @endif
     </div>
 </div>
-
-                    <!-- Saved Items -->
-                           <div class="profile-section">
-    <div class="section-title">
-        <i class="fas fa-heart"></i>
-        Saved Items
-    </div>
-    <div class="section-content">
-        <div class="info-card">
-            @if(count($favorites ?? []) > 0)
-                <div class="saved-items-grid">
-                    @foreach($favorites as $product)
-                        <div class="saved-item">
-                            <img src="{{ $product->image ? asset($product->image) : asset('images/default.png') }}" alt="{{ $product->name }}">
-                            <h4>{{ $product->name }}</h4>
-                            <p>${{ number_format($product->price, 2) }}</p>
-                            <div class="saved-item-actions">
-                                <a href="{{ route('product.show', $product->id) }}" class="view-button">View</a>
-                                <form action="{{ route('cart.add', $product->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="add-to-cart-button">Add to Cart</button>
-                                </form>
-                                <form action="{{ route('favorites.toggle', $product->id) }}" method="POST" class="remove-favorite-form">
-                                    @csrf
-                                    <button type="submit" class="remove-button">
-                                        <i class="fas fa-trash-alt"></i> Remove
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="empty-state">You have no saved items.</p>
-                <a href="{{ url('/shop') }}" class="shop-button">
-                    <i class="fas fa-store"></i> Browse Products
-                </a>
-            @endif
-        </div>
-    </div>
-</div>
-              
 
             <div class="profile-actions">
                 <a href="{{ route('logout') }}" class="logout-button" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -751,32 +707,6 @@
     <button id="topBtn" title="Go to top"><i class="fas fa-arrow-up"></i></button>
 
     <script>
-
-        function cancelOrder(orderId) {
-    if (confirm('Are you sure you want to cancel this order?')) {
-        fetch(`/orders/${orderId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Order cancelled successfully.');
-                location.reload();
-            } else {
-                alert('Failed to cancel order: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('An error occurred while trying to cancel the order.');
-            console.error('Error:', error);
-        });
-    }
-}
         // Back to top button
         const topButton = document.getElementById("topBtn");
         
@@ -848,9 +778,47 @@
         }
     
         });
+    function cancelOrder(orderId, btn) {
+        if (!confirm('Are you sure you want to cancel this order?')) return;
+        btn.disabled = true;
+        btn.textContent = 'Cancelling...';
+        fetch(`/orders/${orderId}/cancel`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Option 1: Remove the order from the DOM
+                // document.getElementById('order-' + orderId).remove();
+                // Option 2: Just update the status and hide the button
+                const orderDiv = document.getElementById('order-' + orderId);
+                if(orderDiv) {
+                    orderDiv.querySelector('.status-pending').textContent = "Cancelled";
+                    orderDiv.querySelector('.status-pending').className = "status-cancelled";
+                    btn.remove();
+                }
+                alert('Order cancelled successfully.');
+            } else {
+                alert(data.message || 'Failed to cancel order.');
+                btn.disabled = false;
+                btn.textContent = 'Cancel Order';
+            }
+        })
+        .catch(error => {
+            alert('Something went wrong. Please try again.');
+            btn.disabled = false;
+            btn.textContent = 'Cancel Order';
+        });
+    }
     </script>
     @push('scripts')
-
+<script>
+</script>
 @endpush
         <script src="js/navbar-footer.js"></script>
 

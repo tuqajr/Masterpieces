@@ -32,35 +32,50 @@ class OrderController extends Controller
         return view('admin.orders.index', compact('orders'));
     }
 
-    public function show(Order $order)
-    {
-        $order->load(['user', 'orderItems']);
-        return view('admin.orders.show', compact('order'));
-    }
+public function show(Order $order)
+{
+    // Define the sequence of statuses
+    $steps = ['pending', 'confirmed', 'preparing', 'delivered'];
+    $currentStep = array_search($order->status, $steps);
+    $progressWidth = $currentStep !== false ? (($currentStep) / (count($steps) - 1)) * 100 : 0;
+
+    return view('orders.show', compact('order', 'progressWidth', 'steps'));
+}
 
     public function updateStatus(Request $request, Order $order)
-{
-    $request->validate([
-        'status' => 'required|in:pending,confirmed,preparing,out_for_delivery,delivered,cancelled'
-    ]);
+    {
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,preparing,out_for_delivery,delivered,cancelled'
+        ]);
 
-    $order->status = $request->status;
-    if ($request->status === 'delivered') {
-        $order->delivered_at = now();
-    } else {
-        $order->delivered_at = null;
-    }
-    $order->save();
+        $order->status = $request->status;
+        if ($request->status === 'delivered') {
+            $order->delivered_at = now();
+        } else {
+            $order->delivered_at = null;
+        }
+        $order->save();
 
-    // AJAX
-    if ($request->ajax() || $request->wantsJson()) {
         return response()->json([
             'success' => true,
+            'status'  => $order->status,
             'message' => 'Order status updated successfully',
-            'status'  => $order->status
         ]);
     }
 
-    return back()->with('success', 'Order status updated!');
-}
+    public function updatePaymentStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'payment_status' => 'required|in:pending,paid,failed'
+        ]);
+
+        $order->payment_status = $request->payment_status;
+        $order->save();
+
+        return response()->json([
+            'success' => true,
+            'payment_status' => $order->payment_status,
+            'message' => 'Payment status updated successfully',
+        ]);
+    }
 }

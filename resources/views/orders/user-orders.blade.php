@@ -28,7 +28,7 @@
             <div class="order-card">
                 <div class="order-header">
                     <div class="order-info">
-                        <h3>Order #{{ $order->order_number }}</h3>
+                        <h3>Order #{{ $order->order_number ?? $order->id }}</h3>
                         <p class="order-date">{{ $order->created_at->format('M d, Y at h:i A') }}</p>
                     </div>
                     <div class="order-status">
@@ -41,7 +41,9 @@
                 <div class="order-summary">
                     <div class="summary-row">
                         <span>{{ $order->orderItems->count() }} item(s)</span>
-                        <span class="total-amount">${{ number_format($order->total_amount, 2) }}</span>
+                        <span class="total-amount">
+                            ${{ number_format($order->total_amount ?? $order->total, 2) }}
+                        </span>
                     </div>
                     <div class="summary-row">
                         <span>Payment Status:</span>
@@ -62,14 +64,6 @@
                         <div class="more-items">
                             +{{ $order->orderItems->count() - 3 }} more items
                         </div>
-                    @endif
-                </div>
-
-                <div class="order-actions">
-                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-outline">View Details</a>
-                 
-                    @if($order->status === 'delivered')
-                        <a href="{{ route('orders.reorder', $order->id) }}" class="btn btn-primary">Reorder</a>
                     @endif
                 </div>
             </div>

@@ -1,21 +1,17 @@
 @extends('layouts.app')
 
-@section('content')
+@section('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-
-<link rel="stylesheet" href="css/styles.css">
-<link href="https://fonts.googleapis.com/css2?family=Orpheus+Pro&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alkalami&family=Badeen+Display&family=Handjet:wght@100..900&family=Reem+Kufi+Fun:wght@400..700&family=Reem+Kufi:wght@400..700&family=Ruwudu:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="description" content="A platform to shop and learn traditional Palestinian Tatreez embroidery.">
+<link rel="stylesheet" href="{{ asset('css/navbar-footer.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;700&family=Orpheus+Pro:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- Main Content -->
-<main class="main-content">
-    <div class="container">
-        <!-- Breadcrumb -->
-        <div class="navbar">
+@endsection
+
+@section('content')
+<header>
+    <div class="navbar">
         <div class="icons">
             <a href="{{ route('cart.show') }}" class="cart-icon">
                 <i class="fas fa-shopping-cart"></i>
@@ -30,10 +26,9 @@
                 
             @if(Auth::check())
                 <div class="login-register-dropdown">
-                    <a href="#" class="dropdown-toggle">
-                        <i class="fas fa-user-circle mobile-user-icon"></i>
-                        <span class="desktop-user-text" style="margin-right: 5px;">Welcome,</span>
-                        <span class="desktop-user-text">{{ Auth::user()->name }}</span>
+                    <a href="#" class="dropdown-toggle" style="display: flex; align-items: center; white-space: nowrap;">
+                        <span style="margin-right: 5px;">Welcome,</span>
+                        <span>{{ Auth::user()->name }}</span>
                     </a>
                     <div class="dropdown-content">
                         @if(Auth::user()->is_admin)
@@ -43,16 +38,15 @@
                         @endif
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit">Logout</button>
+                            <button type="submit" style="border: none; background: none; padding: 8px 16px; font-size: 14px; color: rgb(155, 55, 55); width: 100%; text-align: left; cursor: pointer;">
+                                Logout
+                            </button>
                         </form>
                     </div>
                 </div>
             @else
                 <div class="login-register-dropdown">
-                    <a href="#" class="dropdown-toggle">
-                        <i class="fas fa-user mobile-user-icon"></i>
-                        <span class="desktop-user-text">User</span>
-                    </a>
+                    <a href="#" class="dropdown-toggle">User</a>
                     <div class="dropdown-content">
                         <a href="{{ route('login') }}">Login</a>
                         <a href="{{ route('register') }}">Register</a>
@@ -61,8 +55,11 @@
             @endif
         </div>
         
-        <ul id="navMenu" class="nav-menu">
+        <ul id="navMenu">
             <li><a href="{{ url('/') }}">Home</a></li>
+            @if(optional(Auth::user())->is_admin)
+                <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+            @endif
             <li><a href="{{ url('/shop') }}">Shop</a></li>
             <li><a href="{{ url('/learn') }}">Learn</a></li>
             <li><a href="{{ url('/about') }}">About</a></li>
@@ -71,18 +68,357 @@
         
         <div class="logo-container">
             <span class="logo-text">غرزه</span>
-            <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Logo">
+            <div class="logo-circle">
+                <img src="{{ asset('images/embroidery_1230695.png') }}" alt="Tatreez Logo">
+            </div>
         </div>
         
         <div class="menu-toggle" id="menu-toggle">
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+            <i class="fas fa-bars"></i>
         </div>
     </div>
 </header>
+
+<!-- Font import in your head section -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi+Fun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+/* Base navbar styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background-color: rgb(145, 51, 51);
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Set Reem Kufi Fun font for all navbar elements */
+.navbar, 
+.navbar a, 
+.navbar button,
+.navbar #navMenu li a,
+.navbar .dropdown-toggle,
+.navbar .dropdown-content a,
+.navbar .dropdown-content button,
+.navbar .logo-text {
+    font-family: 'Reem Kufi Fun', sans-serif;
+}
+
+/* Logo styles */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-circle {
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.logo-circle img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.logo-text {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Navigation menu */
+#navMenu {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+#navMenu li {
+    margin: 0;
+    padding: 0;
+}
+
+#navMenu li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+#navMenu li a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+#navMenu li a.active {
+    background-color: rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+}
+
+/* Icons section */
+.icons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Cart icon styles */
+.cart-icon {
+    position: relative;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.cart-icon i {
+    font-size: 20px;
+    display: inline-block;
+}
+
+.cart-icon:hover {
+    transform: scale(1.1);
+}
+
+#cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: #e4c4b0;
+    color: #9b3737;
+    font-size: 12px;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Dropdown styles */
+.login-register-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.dropdown-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 120%;
+    min-width: 180px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    overflow: hidden;
+}
+
+.login-register-dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a,
+.dropdown-content button {
+    display: block;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: rgb(145, 51, 51);
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+    font-size: 14px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.dropdown-content a:hover,
+.dropdown-content button:hover {
+    background-color: rgba(145, 51, 51, 0.1);
+}
+
+/* Hamburger menu toggle */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.menu-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* Mobile responsive styles */
+@media (max-width: 992px) {
+    .navbar {
+        padding: 10px 15px;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+    
+    #navMenu {
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        background-color: rgb(145, 51, 51);
+        padding: 20px;
+        display: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        z-index: 99;
+    }
+    
+    #navMenu.show {
+        display: flex;
+    }
+    
+    #navMenu li a {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 12px 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar {
+        padding: 10px;
+    }
+    
+    .icons {
+        gap: 10px;
+    }
+    
+    .logo-text {
+        font-size: 20px;
+    }
+    
+    .logo-circle {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .dropdown-toggle span:first-of-type {
+        display: none; /* Hide "Welcome," text on very small screens */
+    }
+}
+
+/* Add margin to content to prevent overlap with fixed navbar */
+body {
+    padding-top: 70px;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+    }
+}
+
+/* Fix for Font Awesome icons if they don't appear */
+.fa-shopping-cart:before {
+    content: "\f07a";
+}
+
+.fa-bars:before {
+    content: "\f0c9";
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu toggle functionality
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    menuToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        navMenu.classList.toggle('show');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('#menu-toggle') && 
+            !event.target.closest('#navMenu') && 
+            navMenu.classList.contains('show')) {
+            navMenu.classList.remove('show');
+        }
+    });
+    // Update cart count
+    const cartCountElement = document.getElementById('cart-count');
+    
+    function fetchCartCount() {
+        fetch('/cart/count')
+            .then(response => response.json())
+            .then(data => {
+                if (cartCountElement) {
+                    cartCountElement.textContent = data.count;
+                }
+            })
+            .catch(() => {
+                // Fallback for guests
+                if (cartCountElement) {
+                    let guestCart = JSON.parse(localStorage.getItem("cart")) || [];
+                    cartCountElement.textContent = guestCart.length;
+                }
+            });
+    }
+    
+    fetchCartCount();
+});
+</script>
+
+<!-- Main Content -->
+<main class="main-content" style="margin-top:40px;">    
+    <div class="container">
+        <!-- Breadcrumb -->
+        
 
         <div class="product-detail-grid animate__animated animate__fadeInUp">
             <!-- Product Images -->
@@ -138,8 +474,14 @@
                         </div>
                         <!-- Additional images -->
                         @foreach($product->images as $index => $img)
+                            @php
+                                // Fix the extra image path to use the correct storage path
+                                $extraPath = Str::startsWith($img->image, 'http')
+                                    ? $img->image
+                                    : (Str::startsWith($img->image, 'products/') ? asset('storage/' . $img->image) : asset('storage/products/' . basename($img->image)));
+                            @endphp
                             <div class="thumbnail-item animate__animated animate__fadeInLeft" style="--delay: {{ ($index + 2) * 0.1 }}s;">
-                                <img src="{{ asset('storage/products/' . basename($img->path)) }}" 
+                                <img src="{{ $extraPath }}" 
                                      alt="{{ $product->name }}" 
                                      class="thumbnail-image"
                                      onclick="changeMainImage(this.src, this)">
@@ -297,43 +639,7 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Share Section -->
-                <div class="share-section">
-                    <h3 class="section-title">
-                        <i class="fas fa-share-alt"></i>
-                        Share this product:
-                    </h3>
-                    <div class="social-icons">
-                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" 
-                           target="_blank"
-                           class="social-icon facebook"
-                           title="Share on Facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($product->name) }}" 
-                           target="_blank"
-                           class="social-icon twitter"
-                           title="Share on Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="https://www.pinterest.com/pin/create/button/?url={{ urlencode(request()->url()) }}&description={{ urlencode($product->name) }}" 
-                           target="_blank"
-                           class="social-icon pinterest"
-                           title="Share on Pinterest">
-                            <i class="fab fa-pinterest-p"></i>
-                        </a>
-                        <button onclick="copyToClipboard()" 
-                                class="social-icon copy"
-                                title="Copy Link">
-                            <i class="fas fa-link"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
+            </main>
 
 <!-- Footer Section -->
 <footer>
@@ -444,6 +750,67 @@ body {
 @media (min-width: 992px) {
     .product-detail-grid {
         grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 992px) {
+    .product-detail-grid {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 30px;
+    }
+    .product-images-section, .product-info-section {
+        padding: 0;
+    }
+    .main-image-container {
+        aspect-ratio: unset;
+        min-height: 220px;
+    }
+    .thumbnail-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+}
+@media (max-width: 600px) {
+    .product-detail-grid {
+        padding: 8px;
+        gap: 18px;
+    }
+    .main-image-container {
+        min-height: 140px;
+        border-radius: 8px;
+    }
+    .product-title {
+        font-size: 1.2rem;
+    }
+    .current-price {
+        font-size: 1.2rem;
+    }
+    .original-price {
+        font-size: 1rem;
+    }
+    .product-info-section {
+        gap: 14px;
+    }
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .primary-btn, .secondary-btn {
+        width: 100%;
+        min-width: unset;
+        padding: 12px 0;
+        font-size: 1rem;
+    }
+    .secondary-btn {
+        height: auto;
+        padding: 12px 0;
+    }
+    .specs-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .features-section, .description-section, .specifications-section, .share-section {
+        padding: 10px;
     }
 }
 
@@ -1009,7 +1376,7 @@ body {
 
 /* Footer Enhancements */
 footer {
-    background: linear-gradient(135deg, #2c3e50, #4a6491);
+    background: linear-gradient(135deg, #913333 0%, #7c2828 100%);
     color: white;
     padding: 60px 0 0;
     margin-top: 60px;
@@ -1112,6 +1479,8 @@ footer {
     border-top: 1px solid rgba(255,255,255,0.1);
     font-size: 0.9rem;
     opacity: 0.8;
+    background: linear-gradient(135deg, #913333 0%, #7c2828 100%);
+    color: #fff;
 }
 
 /* Responsive Adjustments */

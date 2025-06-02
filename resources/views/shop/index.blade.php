@@ -106,14 +106,14 @@
                                 <i class="fas fa-tags"></i>
                                 Category
                             </label>
-                            <select name="category" id="category" class="filter-select">
-                                <option value="">All Categories</option>
-                                @foreach($categories as $categoryValue => $categoryName)
-                                    <option value="{{ $categoryValue }}" {{ request('category') == $categoryValue ? 'selected' : '' }}>
-                                        {{ $categoryName }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <select name="category" id="category" class="filter-select">
+                            <option value="">All Categories</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
+                                    {{ $category }}
+                                </option>
+                            @endforeach
+                        </select>
                         </div>
 
                         <div class="filter-group">
@@ -167,14 +167,14 @@
         <div class="products-section">
             @if(!$products->isEmpty())
                 <div class="products-count">
-                    <span>{{ $products->count() }} products found</span>
+                    <span>{{ $products->total() ?? $products->count() }} products found</span>
                 </div>
             @endif
 
             <div class="product-grid">
                 @foreach ($products as $product)
                 <div class="product-card animate__animated animate__fadeInUp" 
-                 style="--delay: {{ $loop->index * 0.1 }}; animation-delay: calc(var(--delay) * 1s);">                   <!-- HEART FAVORITE ICON -->
+                 style="--delay: {{ $loop->index * 0.1 }}; animation-delay: calc(var(--delay) * 1s);">
                     @if(Auth::check())
                         <div class="favorite-heart" data-product-id="{{ $product->id }}">
                             <i class="{{ auth()->user() && $product->isFavoritedBy(auth()->user()) ? 'fas fa-heart filled' : 'far fa-heart empty' }}"></i>

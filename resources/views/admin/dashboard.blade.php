@@ -48,11 +48,6 @@
             </div>
         </div>
     </div>
-
-    <div class="charts-section" style="margin-top: 40px;">
-        <h2 style="margin-bottom: 25px; color: rgb(145, 51, 51);">Order Statistics</h2>
-        <canvas id="ordersChart" height="80"></canvas>
-    </div>
     
     <div class="recent-orders-section" style="margin-top:40px;">
         <h2 style="margin-bottom: 25px; color: rgb(145, 51, 51);">Recent Orders</h2>
@@ -68,13 +63,28 @@
             </thead>
             <tbody>
                 @foreach($recentOrders as $order)
+                @php
+                    // Map statuses to CSS classes and readable names
+                    $status = strtolower($order->status);
+                    $statusMap = [
+                        'pending'           => ['class' => 'status-pending',           'label' => 'Pending'],
+                        'confirmed'         => ['class' => 'status-confirmed',         'label' => 'Confirmed'],
+                        'preparing'         => ['class' => 'status-preparing',         'label' => 'Preparing'],
+                        'processing'        => ['class' => 'status-processing',        'label' => 'Processing'],
+                        'out_for_delivery'  => ['class' => 'status-out-for-delivery',  'label' => 'Out for Delivery'],
+                        'delivered'         => ['class' => 'status-delivered',         'label' => 'Delivered'],
+                        'completed'         => ['class' => 'status-completed',         'label' => 'Completed'],
+                        'cancelled'         => ['class' => 'status-cancelled',         'label' => 'Cancelled'],
+                    ];
+                    $badge = $statusMap[$status] ?? ['class'=>'status-unknown','label'=>ucfirst($order->status)];
+                @endphp
                 <tr>
                     <td>{{ $order->id }}</td>
                     <td>{{ $order->customer->name ?? 'N/A' }}</td>
                     <td>{{ number_format($order->total, 2) }} {{ $currency ?? '$' }}</td>
                     <td>
-                        <span class="status-badge status-{{ strtolower($order->status) }}">
-                            {{ ucfirst($order->status) }}
+                        <span class="status-badge {{ $badge['class'] }}">
+                            {{ $badge['label'] }}
                         </span>
                     </td>
                     <td>{{ $order->created_at->format('Y-m-d') }}</td>
@@ -93,35 +103,36 @@
 @endphp
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById("ordersChart").getContext("2d");
-
-        new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: chartLabels,
-                datasets: [
-                    {
-                        label: "Orders",
-                        data: chartData,
-                        borderColor: "rgb(145, 51, 51)",
-                        backgroundColor: "rgba(145, 51, 51, 0.15)",
-                        tension: 0.3,
-                        pointRadius: 5,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
+        const ctx = document.getElementById("ordersChart")?.getContext("2d");
+        if (ctx) {
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        {
+                            label: "Orders",
+                            data: chartData,
+                            borderColor: "rgb(145, 51, 51)",
+                            backgroundColor: "rgba(145, 51, 51, 0.15)",
+                            tension: 0.3,
+                            pointRadius: 5,
+                            fill: true
+                        }
+                    ]
                 },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { beginAtZero: true }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true }
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 </script>
 
@@ -248,18 +259,15 @@
         font-size: 0.92em;
         font-weight: 600;
     }
-    .status-pending {
-        background: #e0a800;
-    }
-    .status-completed {
-        background: #28a745;
-    }
-    .status-cancelled {
-        background: #dc3545;
-    }
-    .status-processing {
-        background: #17a2b8;
-    }
+    .status-pending { background: #e0a800; color: #fff; }
+    .status-confirmed { background: #17a2b8; color: #fff; }
+    .status-preparing { background: #007bff; color: #fff; }
+    .status-processing { background: #6c757d; color: #fff; }
+    .status-out-for-delivery { background: #6f42c1; color: #fff; }
+    .status-delivered { background: #28a745; color: #fff; }
+    .status-completed { background: #20c997; color: #fff; }
+    .status-cancelled { background: #dc3545; color: #fff; }
+    .status-unknown { background: #adb5bd; color: #fff; }
 
     /* Responsive Adjustments */
     @media (max-width: 992px) {
